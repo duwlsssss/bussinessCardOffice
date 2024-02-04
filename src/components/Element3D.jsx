@@ -51,104 +51,71 @@ function Element3D(){
     // }, [ office_objects, floor, monitor ]);
 
     //모니터 화면 확대
-    const { camera, scene } = useThree();
+    const { camera, scene} = useThree();
+    const meshRef = useRef();
+    const controls = useRef();
     const [beforeCamera, setBeforeCamera] = useState(null);
     
-    const monitorPosition= new THREE.Vector3(0,106,50)
-    const monitorTarget= new THREE.Vector3(0,106,25)
-    
+    const aboutCameraPos = {
+        x: -1.6,
+        y: 106,
+        z: 100,
+      };
+    const aboutCameraRot = {
+        x: -20 * (Math.PI / 180), // 위쪽으로 20도 회전
+        y: 0,
+        z: 0,
+      };
+
     //카메라 위치와 타겟 
     const geometry = new THREE.SphereGeometry(0.5, 32, 32);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const sphere = new THREE.Mesh(geometry, material);
-    sphere.position.copy(monitorPosition);
+    sphere.position.copy(aboutCameraPos);
     scene.add(sphere);
-    const geometry2 = new THREE.SphereGeometry(1, 32, 32);
-    const material2 = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const sphere2 = new THREE.Mesh(geometry2, material2);
-    sphere2.position.copy(monitorTarget);
-    scene.add(sphere2);
-
-    // const direction = new THREE.Vector3();
-    // camera.getWorldDirection(direction);
-    // const estimatedTarget = new THREE.Vector3().addVectors(camera.position, direction.multiplyScalar(100)); // 예시 거리값
 
     const handleMonitorClick = () => {
         if(!beforeCamera){
             // 카메라의 현재 위치와 방향을 저장
             setBeforeCamera({
                 position: camera.position.clone(),
-                // target: new THREE.Vector3(0,0,0) // 계산된 타겟 위치 사용
+                rotation: { x: camera.rotation.x, y: camera.rotation.y, z: camera.rotation.z }
             });
-
-            console.log("monitor click")
-            console.log("position",monitorPosition)
-            console.log("target",monitorTarget)
-            // camera.position.set(monitorPosition.x,monitorPosition.y,monitorPosition.z);
-            // camera.lookAt(monitorTarget);
-
-            // console.log("target",monitorTarget)
-            // 카메라를 모니터 위치로 이동시키고 모니터를 바라보게 함
             gsap.to(camera.position, {
-                x: monitorPosition.x,
-                y: monitorPosition.y,
-                z: monitorPosition.z,
-                duration: 1,
-                ease: "easeOut",
-                onUpdate: function() {
-                    // 카메라의 위치가 변경될 때마다 camera.lookAt을 호출하여 카메라가 계속 대상을 바라보도록 함.
-                    camera.lookAt(monitorTarget.x,monitorTarget.y,monitorTarget.z);
-                },
-                onComplete: function() {
-                    camera.lookAt(monitorTarget.x, monitorTarget.y, monitorTarget.z);
-                    // 카메라의 현재 방향 벡터를 계산
-                    const direction = new THREE.Vector3();
-                    camera.getWorldDirection(direction);
-
-                    // 카메라의 위치에서 방향 벡터를 더하여 실제 바라보고 있는 포인트를 추정
-                    const actualLookAtPoint = new THREE.Vector3().addVectors(camera.position, direction.multiplyScalar(100));
-                    
-                    console.log("after gsap position", camera.position);
-                    console.log("Camera is actually looking at:", actualLookAtPoint);
-                    console.log("Expected to look at:", monitorTarget);
+                ...aboutCameraPos,
+                ease: "power3.inOut",
+                duration: 1.5,
+            });
+            gsap.to(camera.rotation, {
+                ...aboutCameraRot,
+                ease: "power3.inOut",
+                duration: 1.5,
+            });
+        }
+        else {
+            // 카메라를 원래 위치로 이동시키고 원래 방향을 바라보게 함
+            // 두 번째 클릭 시: 카메라를 원래 위치와 회전으로 복귀
+            gsap.to(camera.position, {
+                ...beforeCamera.position,
+                ease: "power3.inOut",
+                duration: 1.5,
+            });
+            gsap.to(camera.rotation, {
+                ...beforeCamera.rotation,
+                ease: "power3.inOut",
+                duration: 1.5,
+                onComplete: () => {
+                    // 원래 상태로 복귀한 후 beforeCamera 상태를 초기화
+                    setBeforeCamera(null);
                 }
-                // onComplete: () => {
-                //     camera.up.set(0,1,0)
-                //     camera.lookAt(monitorTarget.x,monitorTarget.y,monitorTarget.z);
-                //     // 카메라의 현재 방향 벡터를 계산
-                //     const direction = new THREE.Vector3();
-                //     camera.getWorldDirection(direction);
-
-                //     // 카메라의 위치에서 방향 벡터를 더하여 실제 바라보고 있는 포인트를 추정
-                //     const actualLookAtPoint = new THREE.Vector3().addVectors(camera.position, direction.multiplyScalar(100));
-                    
-                //     console.log("after gsap position", camera.position);
-                //     console.log("Camera is actually looking at:", actualLookAtPoint);
-                //     console.log("Expected to look at:", monitorTarget);
-                // }
-            }); }else {
-                console.log("monitor click again")
-                console.log("position",beforeCamera.position)
-                console.log("target",beforeCamera.target)
-                // 카메라를 원래 위치로 이동시키고 원래 방향을 바라보게 함
-                gsap.to(camera.position, {
-                    x: beforeCamera.position.x,
-                    y: beforeCamera.position.y,
-                    z: beforeCamera.position.z,
-                    duration: 1,
-                    ease: "easeOut",
-                    onComplete: () => {
-                        camera.lookAt(beforeCamera.target);
-                        setBeforeCamera(null); // 이전 위치 정보 초기화
-                    }
-                });
-            }
-            useEffect(() => {
-                window.addEventListener('click', handleMonitorClick);
-                return () => {
-                    window.removeEventListener('click', handleMonitorClick);
-                };
-            }, [handleMonitorClick]);
+            });
+        }
+        useEffect(() => {
+            window.addEventListener('click', handleMonitorClick);
+            return () => {
+                window.removeEventListener('click', handleMonitorClick);
+            };
+        }, [handleMonitorClick]);
     }
 
     return(
@@ -186,7 +153,7 @@ function Element3D(){
                 className="monitorScreen" 
                 transform
                 occlude="blending"
-                position={[0,106,25]}
+                position={[-1.6,106,23]}
             >
                 <iframe src="https://kimssinemyeongham.netlify.app"
                     style={{ width: '1600px', height: '1200px' }}
@@ -205,6 +172,7 @@ function Element3D(){
             />  */}
              <primitive
                 object={monitor.scene}
+                ref={meshRef}
                 onClick={handleMonitorClick}
                 scale={1.8}
                 position={[-110,-10,90]}
@@ -222,4 +190,5 @@ function Element3D(){
         </>
     );
 }
+
 export default Element3D;                                                      
