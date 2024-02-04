@@ -5,6 +5,7 @@ To setup a dev environment:
 
 ```bash
 # Clone the repository
+git clone https://github.com/duwlsssss/bussinessCardOffice.git
 
 # Install dependencies 
 npm i
