@@ -52,13 +52,17 @@ function Element3D(){
 
     //모니터 화면 확대
     
+    const controls = useRef(null); 
     const monitorRef = useRef();
+    controls.current.enabled = false;
+
     const { camera, scene } = useThree();
     const [beforeCamera, setBeforeCamera] = useState(null);
     
     const monitorPosition= new THREE.Vector3(0,106,50)
     const monitorTarget= new THREE.Vector3(0,106,25)
     
+    //카메라 위치와 타겟 
     const geometry = new THREE.SphereGeometry(0.5, 32, 32);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const sphere = new THREE.Mesh(geometry, material);
@@ -70,20 +74,21 @@ function Element3D(){
     sphere2.position.copy(monitorTarget);
     scene.add(sphere2);
 
-    const direction = new THREE.Vector3();
-    camera.getWorldDirection(direction);
-    const estimatedTarget = new THREE.Vector3().addVectors(camera.position, direction.multiplyScalar(100)); // 예시 거리값
+    // const direction = new THREE.Vector3();
+    // camera.getWorldDirection(direction);
+    // const estimatedTarget = new THREE.Vector3().addVectors(camera.position, direction.multiplyScalar(100)); // 예시 거리값
 
     const handleMonitorClick = () => {
         if(!beforeCamera){
             // 카메라의 현재 위치와 방향을 저장
             setBeforeCamera({
                 position: camera.position.clone(),
-                target: estimatedTarget, // 계산된 타겟 위치 사용
+                // target: new THREE.Vector3(0,0,0) // 계산된 타겟 위치 사용
             });
 
             console.log("monitor click")
             console.log("position",monitorPosition)
+            console.log("target",monitorTarget)
             // camera.position.set(monitorPosition.x,monitorPosition.y,monitorPosition.z);
             // camera.lookAt(monitorTarget);
 
@@ -97,9 +102,12 @@ function Element3D(){
                 z: monitorPosition.z,
                 duration: 1,
                 ease: "easeOut",
-                onComplete: () => {
-                    camera.up.set(0,1,0)
+                onUpdate: function() {
+                    // 카메라의 위치가 변경될 때마다 camera.lookAt을 호출하여 카메라가 계속 대상을 바라보도록 함.
                     camera.lookAt(monitorTarget.x,monitorTarget.y,monitorTarget.z);
+                },
+                onComplete: function() {
+                    controls.current.target.set(monitorTarget.x, monitorTarget.y, monitorTarget.z);
                     // 카메라의 현재 방향 벡터를 계산
                     const direction = new THREE.Vector3();
                     camera.getWorldDirection(direction);
@@ -110,7 +118,25 @@ function Element3D(){
                     console.log("after gsap position", camera.position);
                     console.log("Camera is actually looking at:", actualLookAtPoint);
                     console.log("Expected to look at:", monitorTarget);
+
+                    // OrbitControls 재활성화
+                    controls.current.enabled = true;
+                    controls.current.update(); // 중요: controls의 내부 상태를 갱신
                 }
+                // onComplete: () => {
+                //     camera.up.set(0,1,0)
+                //     camera.lookAt(monitorTarget.x,monitorTarget.y,monitorTarget.z);
+                //     // 카메라의 현재 방향 벡터를 계산
+                //     const direction = new THREE.Vector3();
+                //     camera.getWorldDirection(direction);
+
+                //     // 카메라의 위치에서 방향 벡터를 더하여 실제 바라보고 있는 포인트를 추정
+                //     const actualLookAtPoint = new THREE.Vector3().addVectors(camera.position, direction.multiplyScalar(100));
+                    
+                //     console.log("after gsap position", camera.position);
+                //     console.log("Camera is actually looking at:", actualLookAtPoint);
+                //     console.log("Expected to look at:", monitorTarget);
+                // }
             }); }else {
                 console.log("monitor click again")
                 console.log("position",beforeCamera.position)
@@ -138,7 +164,7 @@ function Element3D(){
 
     return(
         <>
-            <OrbitControls/>
+            <OrbitControls ref={controls}/>
             <axesHelper args={[500, 500, 500]} /> {/*월드좌표축*/}
             <Stats/>
             <Environment preset="sunset" background />
