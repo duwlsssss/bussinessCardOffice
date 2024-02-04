@@ -51,11 +51,6 @@ function Element3D(){
     // }, [ office_objects, floor, monitor ]);
 
     //모니터 화면 확대
-    
-    const controls = useRef(null); 
-    const monitorRef = useRef();
-    controls.current.enabled = false;
-
     const { camera, scene } = useThree();
     const [beforeCamera, setBeforeCamera] = useState(null);
     
@@ -92,8 +87,6 @@ function Element3D(){
             // camera.position.set(monitorPosition.x,monitorPosition.y,monitorPosition.z);
             // camera.lookAt(monitorTarget);
 
-            camera.up.set(0,1,0)
-
             // console.log("target",monitorTarget)
             // 카메라를 모니터 위치로 이동시키고 모니터를 바라보게 함
             gsap.to(camera.position, {
@@ -107,7 +100,7 @@ function Element3D(){
                     camera.lookAt(monitorTarget.x,monitorTarget.y,monitorTarget.z);
                 },
                 onComplete: function() {
-                    controls.current.target.set(monitorTarget.x, monitorTarget.y, monitorTarget.z);
+                    camera.lookAt(monitorTarget.x, monitorTarget.y, monitorTarget.z);
                     // 카메라의 현재 방향 벡터를 계산
                     const direction = new THREE.Vector3();
                     camera.getWorldDirection(direction);
@@ -118,10 +111,6 @@ function Element3D(){
                     console.log("after gsap position", camera.position);
                     console.log("Camera is actually looking at:", actualLookAtPoint);
                     console.log("Expected to look at:", monitorTarget);
-
-                    // OrbitControls 재활성화
-                    controls.current.enabled = true;
-                    controls.current.update(); // 중요: controls의 내부 상태를 갱신
                 }
                 // onComplete: () => {
                 //     camera.up.set(0,1,0)
@@ -149,7 +138,7 @@ function Element3D(){
                     duration: 1,
                     ease: "easeOut",
                     onComplete: () => {
-                        camera.lookAt(beforeCamera.target.x,beforeCamera.target.y,beforeCamera.target.z);
+                        camera.lookAt(beforeCamera.target);
                         setBeforeCamera(null); // 이전 위치 정보 초기화
                     }
                 });
@@ -164,7 +153,7 @@ function Element3D(){
 
     return(
         <>
-            <OrbitControls ref={controls}/>
+            <OrbitControls/>
             <axesHelper args={[500, 500, 500]} /> {/*월드좌표축*/}
             <Stats/>
             <Environment preset="sunset" background />
@@ -216,7 +205,6 @@ function Element3D(){
             />  */}
              <primitive
                 object={monitor.scene}
-                ref={monitorRef}
                 onClick={handleMonitorClick}
                 scale={1.8}
                 position={[-110,-10,90]}
