@@ -1,42 +1,33 @@
-import './App.css'
 import {Canvas} from '@react-three/fiber'
 import { Suspense, lazy } from "react";
-import Element3D from './Element3D';
-import Loader from './Loader';
+import Loader from './components/Loader';
+import * as THREE from 'three';
+import "./App.css"
+import { CameraControlProvider } from './components/CameraControltext';
 
-const LazyComponent = lazy(() => import('./Element3D'));
+const LazyComponent = lazy(() => import('./components/Element3D'));
 
 function App() {
+
   return (
     <>
-      {/* 기본 카메라 : Perspective Camera */}
-      {/* fov 카메라 렌즈 화각 : 도 단위(0<~<180)
-          position 카메라 위치 : x, y, z 
-      */}
-      <Canvas 
-        shadows
-        camera = {{
-          position: [300,200,0],
-          near: 10,
-          far: 1000
-        }} 
-      >
 
-      {/* orthographic Camera */}
-      {/* <Canvas 
-        orthographic
-        camera = {{
-          near: 0.1,
-          far: 20,
-          position: [7, 7, 0],
-          zoom: 100
-      }}*/}
-
-        <Suspense fallback={<Loader />}>
-          <LazyComponent/>
-        </Suspense>
-      </Canvas>
-    </>
+        <CameraControlProvider>
+          <Canvas
+            shadows
+            camera = {{
+              position:[0,200,350],
+              fov: 75, //광각 화각
+              near: 0.1,
+              far: 5000,
+            }}
+          >
+            <Suspense fallback={<Loader/>}>
+              <LazyComponent/>
+            </Suspense>
+          </Canvas>
+        </CameraControlProvider>
+  </>
   );
 }
 
