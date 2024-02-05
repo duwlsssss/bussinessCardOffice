@@ -1,6 +1,6 @@
 import React,{useEffect,useRef, useState} from "react"
-import { useLoader, useFrame, useThree} from '@react-three/fiber';
-import { useGLTF, Environment, Html,  OrbitControls } from "@react-three/drei"
+import { useLoader, useFrame, useThree, extend} from '@react-three/fiber';
+import { useGLTF, Environment, Html, OrbitControls} from "@react-three/drei"
 import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
@@ -12,6 +12,7 @@ import { gsap } from "gsap/gsap-core";
 import CameraHelper from "./FocusOnObjects"
 // import Player_ from "./Player_";
 
+extend({ OrbitControls });
 
 function Element3D(){
     // const office_objects = useGLTF('./models/office_objects.glb')
@@ -52,26 +53,18 @@ function Element3D(){
 
     //모니터 화면 확대
     const { camera, scene} = useThree();
+    const controlsRef = useRef();
     const meshRef = useRef();
-    const controls = useRef();
     const [beforeCamera, setBeforeCamera] = useState(null);
-    
-    const aboutCameraPos = {
-        x: -1.6,
-        y: 106,
-        z: 100,
-      };
-    const aboutCameraRot = {
-        x: -20 * (Math.PI / 180), // 위쪽으로 20도 회전
-        y: 0,
-        z: 0,
-      };
+
+    const monitorPosition = { x: -1.6, y: 106, z: 47 }; // 새 위치
+    const monitorTarget = { x: -1.6, y: 106, z: 23 }; // 새 타겟
 
     //카메라 위치와 타겟 
     const geometry = new THREE.SphereGeometry(0.5, 32, 32);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const sphere = new THREE.Mesh(geometry, material);
-    sphere.position.copy(aboutCameraPos);
+    sphere.position.copy(monitorPosition);
     scene.add(sphere);
 
     const handleMonitorClick = () => {
@@ -79,48 +72,56 @@ function Element3D(){
             // 카메라의 현재 위치와 방향을 저장
             setBeforeCamera({
                 position: camera.position.clone(),
-                rotation: { x: camera.rotation.x, y: camera.rotation.y, z: camera.rotation.z }
+                target: controlsRef.current.target.clone(), 
             });
+
+            // 카메라를 모니터 위치로 이동시키고 모니터를 바라보게 함
             gsap.to(camera.position, {
-                ...aboutCameraPos,
-                ease: "power3.inOut",
-                duration: 1.5,
+                x: monitorPosition.x,
+                y: monitorPosition.y,
+                z: monitorPosition.z,
+                duration: 1,
+                ease:"power3.inOut",
             });
-            gsap.to(camera.rotation, {
-                ...aboutCameraRot,
-                ease: "power3.inOut",
-                duration: 1.5,
+            gsap.to(controlsRef.current.target, {
+                x: monitorTarget.x,
+                y: monitorTarget.y,
+                z: monitorTarget.z,
+                duration: 1,
+                ease:"power3.inOut",
+                onUpdate:()=>{controlsRef.current.update()},
             });
-        }
-        else {
+        }else {
             // 카메라를 원래 위치로 이동시키고 원래 방향을 바라보게 함
-            // 두 번째 클릭 시: 카메라를 원래 위치와 회전으로 복귀
             gsap.to(camera.position, {
-                ...beforeCamera.position,
-                ease: "power3.inOut",
-                duration: 1.5,
+                x: beforeCamera.position.x,
+                y: beforeCamera.position.y,
+                z: beforeCamera.position.z,
+                ease:"power3.inOut",
+                duration: 1,
             });
-            gsap.to(camera.rotation, {
-                ...beforeCamera.rotation,
-                ease: "power3.inOut",
-                duration: 1.5,
-                onComplete: () => {
-                    // 원래 상태로 복귀한 후 beforeCamera 상태를 초기화
-                    setBeforeCamera(null);
-                }
+            gsap.to(controlsRef.current.target, {
+                x: beforeCamera.target.x,
+                y: beforeCamera.target.y,
+                z: beforeCamera.target.z,
+                duration: 1,
+                ease:"power3.inOut",
+                onUpdate:()=>{controlsRef.current.update()},
+                oncomplete:()=>{setBeforeCamera(null)},
             });
         }
-        useEffect(() => {
-            window.addEventListener('click', handleMonitorClick);
-            return () => {
-                window.removeEventListener('click', handleMonitorClick);
-            };
-        }, [handleMonitorClick]);
     }
+
+    useEffect(() => {
+        window.addEventListener('click', handleMonitorClick);
+        return () => {
+            window.removeEventListener('click', handleMonitorClick);
+        };
+    }, [handleMonitorClick]);
 
     return(
         <>
-            <OrbitControls/>
+            <OrbitControls ref={controlsRef} />
             <axesHelper args={[500, 500, 500]} /> {/*월드좌표축*/}
             <Stats/>
             <Environment preset="sunset" background />
@@ -184,7 +185,7 @@ function Element3D(){
                 position={[-70,0,63]}
                 rotation={[0, -90 * Math.PI / 180, 0]}
             />
-            <Player/>
+            {/* <Player/> */}
             <NPC/>
             {/* <Player_/> */}
         </>
