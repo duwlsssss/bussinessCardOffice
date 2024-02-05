@@ -124,7 +124,7 @@ function Element3D(){
             <OrbitControls ref={controlsRef} />
             <axesHelper args={[500, 500, 500]} /> {/*월드좌표축*/}
             <Stats/>
-            <Environment preset="sunset" background />
+            <Environment preset="forest" backgroud/>
             <directionalLight
                     ref={directionalLightRef}
                     intensity={1}
