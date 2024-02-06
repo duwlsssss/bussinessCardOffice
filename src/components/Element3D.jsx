@@ -120,6 +120,8 @@ function Element3D(){
     const { handleMonitorClick } = FocusOnMonitor(controlsRef);
     const { handleNoticeBoardClick } = FocusOnNoticeBoard(controlsRef);
 
+    //충돌 
+    const [npcCollision, setNpcCollision] = useState(false); // NPC와의 충돌 상태
     return(
         <>
             <OrbitControls ref={controlsRef} />
@@ -172,26 +174,26 @@ function Element3D(){
                 scale={1.1}
                 position={[100,0,63]}
             />  */}
-            <primitive
-                object={monitor.scene}
-                onClick={handleMonitorClick} // 이벤트 핸들러 수정
-                scale={1.8}
-                position={[-110,-10,90]}
-                rotation={[0, -90 * Math.PI / 180, 0]} 
-            />
-             <primitive
-                object={office.scene}
-                scale={1.1}
-                position={[-70,0,63]}
-                rotation={[0, -90 * Math.PI / 180, 0]}
-            />
-            <mesh onClick={handleNoticeBoardClick} position={[-260, 150, -200]}>
-                <boxGeometry args={[10, 10, 10]} />
-                <meshStandardMaterial color={'orange'} />
-            </mesh>
-            {/* <Player/> */}
-            <NPC/>
-            {/* <Player_/> */}
+                    <primitive
+                        object={monitor.scene}
+                        onClick={handleMonitorClick} // 이벤트 핸들러 수정
+                        scale={1.8}
+                        position={[-110,-10,90]}
+                        rotation={[0, -90 * Math.PI / 180, 0]} 
+                    />
+                     <primitive
+                        object={office.scene}
+                        scale={1.1}
+                        position={[-70,0,63]}
+                        rotation={[0, -90 * Math.PI / 180, 0]}
+                    />
+                    <mesh onClick={handleNoticeBoardClick} position={[-260, 150, -200]}>
+                        <boxGeometry args={[10, 10, 10]} />
+                        <meshStandardMaterial color={'orange'} />
+                    </mesh>
+                    {/* <Player/> */}
+                    <NPC/>
+                    {/* <Player_/> */}
         </>
     );
 }

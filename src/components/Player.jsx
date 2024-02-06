@@ -3,7 +3,7 @@ import { useThree, useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import useInput from "../hooks/useInput"
-import { useCameraControl } from './CameraControltext';
+// import { RigidBody, useRigidBody, BoxCollider, useContactEvents } from '@react-three/rapier';
 
 let walkDirection = new THREE.Vector3();
 let rotateAngle = new THREE.Vector3(0,1,0);
@@ -39,7 +39,8 @@ const directionOffset = ({forward, backward, left, right})=>{
 }
 
 const Player=()=>{
-    const { isFocusMode } = useCameraControl();
+    // Player의 물리적 속성
+    // const [ref, api] = useRigidBody(() => ({ type: 'dynamic' }));
 
     // 모델과 애니메이션 로드 상태를 추적하는 상태 변수
     const [isLoaded, setIsLoaded] = useState(false);
@@ -108,7 +109,6 @@ const Player=()=>{
 
 
     useFrame((state,delta)=>{
-        if (!isFocusMode) {
         
             if(currentAction.current=="walking"){
                 // 카메라 방향으로부터 회전 각도 계산
@@ -147,18 +147,21 @@ const Player=()=>{
             
                 }
             }
-        }
+        
     );
 
     return (
         <>
-             <OrbitControls ref={controlsRef}/>
-             <primitive 
-                object={model.scene}
-                scale={24}
-                position={[140,10,280]}
-                rotation={[0,180*Math.PI/180,0]}
-             />
+            <OrbitControls ref={controlsRef}/>
+            {/* <RigidBody ref={ref}>
+                <BoxCollider args={[1, 2, 1]} /> */}
+                <primitive 
+                    object={model.scene}
+                    scale={24}
+                    position={[140,10,280]}
+                    rotation={[0,180*Math.PI/180,0]}
+                />
+             {/* </RigidBody> */}
         </>
     );
 };

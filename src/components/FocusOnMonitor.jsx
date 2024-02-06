@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { gsap } from 'gsap';
-import { debounce } from 'lodash';
 
 const FocusOnMonitor = (controlsRef) => {
   const { camera } = useThree();
   const [beforeCamera, setBeforeCamera] = useState(null);
 
-  const monitorPosition = { x: -1.6, y: 106, z: 47 };
-  const monitorTarget = { x: -1.6, y: 106, z: 23 };
+  const nbPosition = { x: -1.6, y: 106, z: 50 };
+  const nbTarget = { x: -1.6, y: 106, z: 23 };
 
-  const handleMonitorClick = debounce(() => {
-    console.log("monitorClick")
+  const handleMonitorClick = () => {
+    console.log("monitor click")
     if (!beforeCamera && controlsRef.current) {
       setBeforeCamera({
         position: camera.position.clone(),
@@ -19,16 +18,16 @@ const FocusOnMonitor = (controlsRef) => {
       });
 
       gsap.to(camera.position, {
-        x: monitorPosition.x,
-        y: monitorPosition.y,
-        z: monitorPosition.z,
+        x: nbPosition.x,
+        y: nbPosition.y,
+        z: nbPosition.z,
         duration: 1,
         ease: "power3.inOut",
       });
       gsap.to(controlsRef.current.target, {
-        x: monitorTarget.x,
-        y: monitorTarget.y,
-        z: monitorTarget.z,
+        x: nbTarget.x,
+        y: nbTarget.y,
+        z: nbTarget.z,
         duration: 1,
         ease: "power3.inOut",
         onUpdate: () => { controlsRef.current.update(); },
@@ -51,10 +50,9 @@ const FocusOnMonitor = (controlsRef) => {
         onComplete: () => { setBeforeCamera(null); },
       });
     }
-  }, 300); // 300ms 내에 중복 호출 방지
+  };
 
   return { handleMonitorClick };
-
 };
 
 export default FocusOnMonitor;
