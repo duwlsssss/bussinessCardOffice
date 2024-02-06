@@ -1,14 +1,15 @@
 import React,{useEffect,useRef, useState} from "react"
 import { useLoader, useFrame, useThree, extend} from '@react-three/fiber';
-import { useGLTF, Environment, Html, OrbitControls} from "@react-three/drei"
+import { useGLTF, Environment, Html, OrbitControls, } from "@react-three/drei"
 import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
 import NPC from "./NPC";
 import Player from "./Player";
-import { gsap } from "gsap/gsap-core";
 import FocusOnMonitor from "./focusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
+import { RigidBody } from "@react-three/rapier";
+import { Controls } from '../App';
 // import Player_ from "./Player_";
 
 
@@ -17,6 +18,7 @@ function Element3D(){
     // const floor = useGLTF('./models/wall_floor.glb')
     const monitor = useGLTF('./models/monitor.glb')
     const office = useGLTF('./models/office.glb')
+    const {scene,animations} = useGLTF('./models/dancer.glb');
 
     //조명 헬퍼
     const directionalLightRef = useRef();
@@ -49,79 +51,10 @@ function Element3D(){
 
     // }, [ office_objects, floor, monitor ]);
 
-    // //모니터 화면 확대
-    // const { camera, scene} = useThree();
-    // const controlsRef = useRef();
-    // const meshRef = useRef();
-    // const [beforeCamera, setBeforeCamera] = useState(null);
-
-    // const monitorPosition = { x: -1.6, y: 106, z: 47 }; // 새 위치
-    // const monitorTarget = { x: -1.6, y: 106, z: 23 }; // 새 타겟
-
-    // //카메라 위치와 타겟 
-    // const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-    // const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    // const sphere = new THREE.Mesh(geometry, material);
-    // sphere.position.copy(monitorPosition);
-    // scene.add(sphere);
-
-    // const handleMonitorClick = () => {
-    //     if(!beforeCamera){
-    //         // 카메라의 현재 위치와 방향을 저장
-    //         setBeforeCamera({
-    //             position: camera.position.clone(),
-    //             target: controlsRef.current.target.clone(), 
-    //         });
-
-    //         // 카메라를 모니터 위치로 이동시키고 모니터를 바라보게 함
-    //         gsap.to(camera.position, {
-    //             x: monitorPosition.x,
-    //             y: monitorPosition.y,
-    //             z: monitorPosition.z,
-    //             duration: 1,
-    //             ease:"power3.inOut",
-    //         });
-    //         gsap.to(controlsRef.current.target, {
-    //             x: monitorTarget.x,
-    //             y: monitorTarget.y,
-    //             z: monitorTarget.z,
-    //             duration: 1,
-    //             ease:"power3.inOut",
-    //             onUpdate:()=>{controlsRef.current.update()},
-    //         });
-    //     }else {
-    //         // 카메라를 원래 위치로 이동시키고 원래 방향을 바라보게 함
-    //         gsap.to(camera.position, {
-    //             x: beforeCamera.position.x,
-    //             y: beforeCamera.position.y,
-    //             z: beforeCamera.position.z,
-    //             ease:"power3.inOut",
-    //             duration: 1,
-    //         });
-    //         gsap.to(controlsRef.current.target, {
-    //             x: beforeCamera.target.x,
-    //             y: beforeCamera.target.y,
-    //             z: beforeCamera.target.z,
-    //             duration: 1,
-    //             ease:"power3.inOut",
-    //             onUpdate:()=>{controlsRef.current.update()},
-    //             oncomplete:()=>{setBeforeCamera(null)},
-    //         });
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     window.addEventListener('click', handleMonitorClick);
-    //     return () => {
-    //         window.removeEventListener('click', handleMonitorClick);
-    //     };
-    // }, [handleMonitorClick]);
     const controlsRef = useRef();
     const { handleMonitorClick } = FocusOnMonitor(controlsRef);
     const { handleNoticeBoardClick } = FocusOnNoticeBoard(controlsRef);
-
-    //충돌 
-    const [npcCollision, setNpcCollision] = useState(false); // NPC와의 충돌 상태
+    
     return(
         <>
             <OrbitControls ref={controlsRef} />
@@ -173,27 +106,32 @@ function Element3D(){
                 object={floor.scene} 
                 scale={1.1}
                 position={[100,0,63]}
-            />  */}
-                    <primitive
-                        object={monitor.scene}
-                        onClick={handleMonitorClick} // 이벤트 핸들러 수정
-                        scale={1.8}
-                        position={[-110,-10,90]}
-                        rotation={[0, -90 * Math.PI / 180, 0]} 
-                    />
-                     <primitive
-                        object={office.scene}
-                        scale={1.1}
-                        position={[-70,0,63]}
-                        rotation={[0, -90 * Math.PI / 180, 0]}
-                    />
-                    <mesh onClick={handleNoticeBoardClick} position={[-260, 150, -200]}>
-                        <boxGeometry args={[10, 10, 10]} />
-                        <meshStandardMaterial color={'orange'} />
-                    </mesh>
-                    {/* <Player/> */}
-                    <NPC/>
-                    {/* <Player_/> */}
+             />  */}
+            <RigidBody type="fixed"
+                scale={1.8}
+                position={[-110,-10,90]}
+                rotation={[0, -90 * Math.PI / 180, 0]} 
+            >
+                <primitive
+                    object={monitor.scene}
+                    onClick={handleMonitorClick} // 이벤트 핸들러 수정
+                />
+            </RigidBody>
+            <RigidBody type="fixed" 
+                scale={1.1}
+                position={[-70,0,63]}
+                rotation={[0, -90 * Math.PI / 180, 0]}
+            >
+                <primitive
+                    object={office.scene}
+                />
+            </RigidBody>
+            <mesh onClick={handleNoticeBoardClick} position={[-260, 150, -200]}>
+                <boxGeometry args={[10, 10, 10]} />
+                <meshStandardMaterial color={'orange'} />
+            </mesh>
+            <NPC controlsRef={controlsRef}/>
+            <Player/>
         </>
     );
 }

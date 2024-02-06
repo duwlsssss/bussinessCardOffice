@@ -1,51 +1,71 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations, OrbitControls } from '@react-three/drei';
+import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
-import useInput from "../hooks/useInput"
-// import { RigidBody, useRigidBody, BoxCollider, useContactEvents } from '@react-three/rapier';
+import { RigidBody,CapsuleCollider,vec3 } from '@react-three/rapier';
+import { Controls } from '../App';
 
-let walkDirection = new THREE.Vector3();
-let rotateAngle = new THREE.Vector3(0,1,0);
-let rotateQurternion = new THREE.Quaternion();
-let cameraTarget= new THREE.Vector3();
-
-const directionOffset = ({forward, backward, left, right})=>{
-    var directionOffset=0;//w
-
-    if(forward){
-        if(left){
-            directionOffset=Math.PI/4; //w+a
-        }else if(right){
-            directionOffset=-Math.PI/4; //w+d
-        }
-    }else if(backward){
-        if(left){
-            directionOffset=Math.PI/4+Math.PI/2; //s+a
-        }else if(right){
-            directionOffset=-Math.PI/4-Math.PI/2; //s+d
-        }
-        else{
-            directionOffset=Math.PI; //s
-        }
-    }else if(left){
-        directionOffset=Math.PI/2; //a
-    }
-    else if(right){
-        directionOffset=-Math.PI/2; //d
-    }
-
-    return directionOffset;
-}
+const MOVEMENT_SPEED = 2;
+const MAX_VEL = 3;
 
 const Player=()=>{
-    // Player의 물리적 속성
-    // const [ref, api] = useRigidBody(() => ({ type: 'dynamic' }));
+    const PlayerRef=useRef();
+    const rigidbody=useRef();
+
+    // 키보드 입력에 따라 Player 움직임 제어
+    const leftPressed = useKeyboardControls((state) => state[Controls.left])
+    const rightPressed = useKeyboardControls((state) => state[Controls.right])
+    const backPressed = useKeyboardControls((state) => state[Controls.back])
+    const forwardPressed = useKeyboardControls((state) => state[Controls.forward])
+
+    useFrame((state)=>{
+        const impulse = { x: 0, y: 0, z: 0 };
+        const linvel = rigidbody.current.linvel();
+        let changeRotation = false;
+
+        if (rightPressed && linvel.x < MAX_VEL) {
+        impulse.x += MOVEMENT_SPEED;
+        changeRotation = true;
+        }
+        if (leftPressed && linvel.x > -MAX_VEL) {
+        impulse.x -= MOVEMENT_SPEED;
+        changeRotation = true;
+        }
+        if (backPressed && linvel.z < MAX_VEL) {
+        impulse.z += MOVEMENT_SPEED;
+        changeRotation = true;
+        }
+        if (forwardPressed && linvel.z > -MAX_VEL) {
+        impulse.z -= MOVEMENT_SPEED;
+        changeRotation = true;
+        }
+
+        rigidbody.current.applyImpulse(impulse, true);
+        if (changeRotation) {
+        const angle = Math.atan2(linvel.x, linvel.z);
+        PlayerRef.current.rotation.y = angle;
+        }
+
+        //카메라 따라감
+        const characterWorldPosition = PlayerRef.current.getWorldPosition(
+        new THREE.Vector3()
+        );
+        state.camera.position.x = characterWorldPosition.x;
+        state.camera.position.z = characterWorldPosition.z + 14;
+
+        const targetLookAt = new THREE.Vector3(
+        characterWorldPosition.x,
+        0,
+        characterWorldPosition.z
+        );
+
+        state.camera.lookAt(targetLookAt);
+    });
+
 
     // 모델과 애니메이션 로드 상태를 추적하는 상태 변수
     const [isLoaded, setIsLoaded] = useState(false);
 
-    const {forward,backward,left,right}=useInput();
     const model = useGLTF("./models/idle_.glb");
     const {actions} = useAnimations(model.animations, model.scene);
 
@@ -57,6 +77,8 @@ const Player=()=>{
     }, [model, actions]);
 
     // 로드 완료 후 standing 애니메이션으로 설정
+    const currentAction = useRef();
+
     useEffect(() => {
         if (isLoaded) {
         currentAction.current = actions.standing;
@@ -64,6 +86,7 @@ const Player=()=>{
         }
     }, [isLoaded, actions]);
 
+    //그림자
     model.scene.traverse((obj) => {
         if (obj.isMesh) {
             obj.castShadow = true;
@@ -71,25 +94,10 @@ const Player=()=>{
         }
     });
 
-    const updateCameraTarget=(moveX, moveZ)=>{
-        //move camera
-        camera.position.x+=moveX;
-        camera.position.z+=moveZ;
-
-        //update camera target
-        cameraTarget.x=model.scene.position.x;
-        cameraTarget.y=model.scene.position.y+1;
-        cameraTarget.z=model.scene.position.z;
-        if(controlsRef.current) controlsRef.current.target=cameraTarget;
-    }
-    const currentAction =useRef();
-    const controlsRef = useRef();
-    const camera = useThree((state)=>state.camera);
-
     useEffect(()=>{
-        let action="";
+        let action="standing";
 
-        if(forward||backward||left||right){
+        if(leftPressed || rightPressed || backPressed || forwardPressed){
             action="walking";
             // if(shift){
             //     action="running"
@@ -105,66 +113,27 @@ const Player=()=>{
             nextActionToPlay?.reset().fadeIn(0.2).play();
             currentAction.current=action;
         }
-    },[forward,backward,left,right,actions])
-
-
-    useFrame((state,delta)=>{
-        
-            if(currentAction.current=="walking"){
-                // 카메라 방향으로부터 회전 각도 계산
-                let angleYCameraDirection = Math.atan2(
-                    camera.position.x - model.scene.position.x,
-                    camera.position.z - model.scene.position.z
-                );
-
-                // 입력에 따른 이동 방향 오프셋 계산
-                let newDirectionOffset = directionOffset({ forward, backward, left, right });
-
-                // 모델의 회전 각도 업데이트
-                rotateQurternion.setFromAxisAngle(
-                    rotateAngle,
-                    angleYCameraDirection + newDirectionOffset
-                );
-                model.scene.quaternion.rotateTowards(rotateQurternion, 0.2);
-
-                // //최종 방향 계산
-                camera.getWorldDirection(walkDirection);
-                walkDirection.y=0;
-                walkDirection.normalize();
-                walkDirection.applyAxisAngle(rotateAngle,newDirectionOffset);
-
-                //walk||run velocity
-                const velocity=30;
-                // const velocity=currentAction.current=="running"?10:5;
-
-                //move model & camera
-                const moveX=walkDirection.x*velocity*delta;
-                const moveZ=walkDirection.z*velocity*delta;
-                model.scene.position.x+=moveX;
-                model.scene.position.z+=moveZ;
-
-                updateCameraTarget(moveX,moveZ);
-            
-                }
-            }
-        
-    );
+    },[leftPressed || rightPressed || backPressed || forwardPressed])
 
     return (
         <>
-            <OrbitControls ref={controlsRef}/>
-            {/* <RigidBody ref={ref}>
-                <BoxCollider args={[1, 2, 1]} /> */}
+            <RigidBody 
+                type="kinematicPosition"
+                name="Player"
+                ref={rigidbody}
+                enabledRotations={[false, false, false]}
+            >
                 <primitive 
                     object={model.scene}
+                    ref={PlayerRef}
                     scale={24}
-                    position={[140,10,280]}
+                    position={[0,10,270]}
                     rotation={[0,180*Math.PI/180,0]}
                 />
-             {/* </RigidBody> */}
+            </RigidBody>
         </>
     );
 };
 
-export default Player;
 
+export default Player;
