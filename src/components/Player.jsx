@@ -1,103 +1,93 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei';
+import { useGLTF, useAnimations,OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { RigidBody,CapsuleCollider,vec3 } from '@react-three/rapier';
-import { Controls } from '../App';
+import { RigidBody,CapsuleCollider } from '@react-three/rapier';
+import useCameraStore from '../store/cameraStore';
+import useInput from "../hooks/useInput"
+import { gsap } from 'gsap/gsap-core';
 
-const MOVEMENT_SPEED = 2;
-const MAX_VEL = 3;
+let walkDirection = new THREE.Vector3();
+let rotateAngle = new THREE.Vector3(0,1,0);
+let rotateQurternion = new THREE.Quaternion();
+let cameraTarget= new THREE.Vector3();
+
+const directionOffset = ({forward, backward, left, right})=>{
+    var directionOffset=0;//w
+
+    if(forward){
+        if(left){
+            directionOffset=Math.PI/4; //w+a
+        }else if(right){
+            directionOffset=-Math.PI/4; //w+d
+        }
+    }else if(backward){
+        if(left){
+            directionOffset=Math.PI/4+Math.PI/2; //s+a
+        }else if(right){
+            directionOffset=-Math.PI/4-Math.PI/2; //s+d
+        }
+        else{
+            directionOffset=Math.PI; //s
+        }
+    }else if(left){
+        directionOffset=Math.PI/2; //a
+    }
+    else if(right){
+        directionOffset=-Math.PI/2; //d
+    }
+
+    return directionOffset;
+}
 
 const Player=()=>{
-    const PlayerRef=useRef();
+    const {camera}=useThree();
+    const { isFocused, clearFocus } = useCameraStore();
+
+    const playerRef=useRef();
     const rigidbody=useRef();
-
-    // 키보드 입력에 따라 Player 움직임 제어
-    const leftPressed = useKeyboardControls((state) => state[Controls.left])
-    const rightPressed = useKeyboardControls((state) => state[Controls.right])
-    const backPressed = useKeyboardControls((state) => state[Controls.back])
-    const forwardPressed = useKeyboardControls((state) => state[Controls.forward])
-
-    useFrame((state)=>{
-        const impulse = { x: 0, y: 0, z: 0 };
-        const linvel = rigidbody.current.linvel();
-        let changeRotation = false;
-
-        if (rightPressed && linvel.x < MAX_VEL) {
-        impulse.x += MOVEMENT_SPEED;
-        changeRotation = true;
-        }
-        if (leftPressed && linvel.x > -MAX_VEL) {
-        impulse.x -= MOVEMENT_SPEED;
-        changeRotation = true;
-        }
-        if (backPressed && linvel.z < MAX_VEL) {
-        impulse.z += MOVEMENT_SPEED;
-        changeRotation = true;
-        }
-        if (forwardPressed && linvel.z > -MAX_VEL) {
-        impulse.z -= MOVEMENT_SPEED;
-        changeRotation = true;
-        }
-
-        rigidbody.current.applyImpulse(impulse, true);
-        if (changeRotation) {
-        const angle = Math.atan2(linvel.x, linvel.z);
-        PlayerRef.current.rotation.y = angle;
-        }
-
-        //카메라 따라감
-        const characterWorldPosition = PlayerRef.current.getWorldPosition(
-        new THREE.Vector3()
-        );
-        state.camera.position.x = characterWorldPosition.x;
-        state.camera.position.z = characterWorldPosition.z + 14;
-
-        const targetLookAt = new THREE.Vector3(
-        characterWorldPosition.x,
-        0,
-        characterWorldPosition.z
-        );
-
-        state.camera.lookAt(targetLookAt);
-    });
-
+    const currentAction =useRef();
+    const { forward, backward, left, right } = useInput();
 
     // 모델과 애니메이션 로드 상태를 추적하는 상태 변수
     const [isLoaded, setIsLoaded] = useState(false);
 
-    const model = useGLTF("./models/idle_.glb");
-    const {actions} = useAnimations(model.animations, model.scene);
-
-    // 모델과 애니메이션이 로드되었는지 감지하고, 상태를 업데이트
-    useEffect(() => {
-        if (model && actions && Object.keys(actions).length > 0) {
-        setIsLoaded(true);
-        }
-    }, [model, actions]);
-
-    // 로드 완료 후 standing 애니메이션으로 설정
-    const currentAction = useRef();
+    const { scene, animations } = useGLTF("./models/idle_.glb");
+    const { actions } = useAnimations(animations, scene);
 
     useEffect(() => {
+        // 모델과 애니메이션 로드 상태를 감지하고, 상태를 업데이트
+        const isLoaded = scene && actions && Object.keys(actions).length > 0;
         if (isLoaded) {
-        currentAction.current = actions.standing;
-        currentAction.current.play();
+            actions.standing.play();
         }
-    }, [isLoaded, actions]);
+    }, [scene, actions]);
+    // 로드 완료 후 standing 애니메이션으로 설정
 
     //그림자
-    model.scene.traverse((obj) => {
+    scene.traverse((obj) => {
         if (obj.isMesh) {
             obj.castShadow = true;
             obj.receiveShadow = true;
         }
     });
 
-    useEffect(()=>{
-        let action="standing";
+    const updateCameraTarget=(moveX, moveZ)=>{
+        //move camera
+        camera.position.x+=moveX;
+        camera.position.z+=moveZ;
 
-        if(leftPressed || rightPressed || backPressed || forwardPressed){
+        //update camera target
+        cameraTarget.x=scene.position.x;
+        cameraTarget.y=scene.position.y+1;
+        cameraTarget.z=scene.position.z;
+        if(controlsRef.current) controlsRef.current.target=cameraTarget;
+    }
+
+    useEffect(()=>{
+        let action="";
+
+        if(forward||backward||left||right){
             action="walking";
             // if(shift){
             //     action="running"
@@ -113,24 +103,91 @@ const Player=()=>{
             nextActionToPlay?.reset().fadeIn(0.2).play();
             currentAction.current=action;
         }
-    },[leftPressed || rightPressed || backPressed || forwardPressed])
+    },[forward,backward,left,right,actions])
+
+
+    useFrame((state,delta)=>{
+        if (!isFocused) {
+        
+            if(currentAction.current=="walking"){
+                // 카메라 방향으로부터 회전 각도 계산
+                let angleYCameraDirection = Math.atan2(
+                    camera.position.x - scene.position.x,
+                    camera.position.z - scene.position.z
+                );
+
+                // 입력에 따른 이동 방향 오프셋 계산
+                let newDirectionOffset = directionOffset({ forward, backward, left, right });
+
+                // 모델의 회전 각도 업데이트
+                rotateQurternion.setFromAxisAngle(
+                    rotateAngle,
+                    angleYCameraDirection + newDirectionOffset
+                );
+                scene.quaternion.rotateTowards(rotateQurternion, 0.2);
+
+                // //최종 방향 계산
+                camera.getWorldDirection(walkDirection);
+                walkDirection.y=0;
+                walkDirection.normalize();
+                walkDirection.applyAxisAngle(rotateAngle,newDirectionOffset);
+
+                //walk||run velocity
+                const velocity=30;
+                // const velocity=currentAction.current=="running"?10:5;
+
+                //move model & camera
+                const moveX=walkDirection.x*velocity*delta;
+                const moveZ=walkDirection.z*velocity*delta;
+                scene.position.x+=moveX;
+                scene.position.z+=moveZ;
+
+                updateCameraTarget(moveX,moveZ);
+            
+                }
+            }
+        }
+    );
+
+
+    // 카메라 포커스가 해제되었을 때의 처리
+    useEffect(() => {
+        if (!isFocused && playerRef.current) {
+            const playerPosition = playerRef.current.position;
+      
+            // 카메라를 플레이어의 위치로 부드럽게 이동
+            gsap.to(camera.position, {
+              x: playerPosition.x,
+              y: playerPosition.y + 5, // 카메라 높이 조정
+              z: playerPosition.z + 10, // 카메라와 플레이어 사이의 거리
+              duration: 1,
+              ease: "power3.inOut",
+              onUpdate: () => {
+                // 카메라가 항상 플레이어를 바라보도록 업데이트
+                camera.lookAt(playerPosition.x, playerPosition.y, playerPosition.z);
+              }
+            });
+          }
+        }, [isFocused, camera, playerRef]);
+
 
     return (
         <>
-            <RigidBody 
-                type="kinematicPosition"
+            {/* <RigidBody 
                 name="Player"
                 ref={rigidbody}
+                colliders={false}
                 enabledRotations={[false, false, false]}
             >
+                <CapsuleCollider args={[3, 18]} position={[0,30,240]} /> */}
                 <primitive 
-                    object={model.scene}
-                    ref={PlayerRef}
+                    object={scene}
+                    ref={playerRef}
                     scale={24}
-                    position={[0,10,270]}
+                    position={[0,10,240]}
                     rotation={[0,180*Math.PI/180,0]}
                 />
-            </RigidBody>
+            {/* </RigidBody> */}
         </>
     );
 };

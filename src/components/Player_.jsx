@@ -3,6 +3,7 @@ import { useThree, useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import useInput from "../hooks/useInput"
+import { useCameraControl } from './CameraControltext';
 
 let walkDirection = new THREE.Vector3();
 let rotateAngle = new THREE.Vector3(0,1,0);
@@ -38,11 +39,13 @@ const directionOffset = ({forward, backward, left, right})=>{
 }
 
 const Player=()=>{
+    const { isFocusMode } = useCameraControl();
+
     // 모델과 애니메이션 로드 상태를 추적하는 상태 변수
     const [isLoaded, setIsLoaded] = useState(false);
 
     const {forward,backward,left,right}=useInput();
-    const model = useGLTF("./models/dancer.glb");
+    const model = useGLTF("./models/idle_.glb");
     const {actions} = useAnimations(model.animations, model.scene);
 
     // 모델과 애니메이션이 로드되었는지 감지하고, 상태를 업데이트
@@ -52,10 +55,10 @@ const Player=()=>{
         }
     }, [model, actions]);
 
-    // 로드 완료 후 windmill 애니메이션으로 설정
+    // 로드 완료 후 standing 애니메이션으로 설정
     useEffect(() => {
         if (isLoaded) {
-        currentAction.current = actions.windmill;
+        currentAction.current = actions.standing;
         currentAction.current.play();
         }
     }, [isLoaded, actions]);
@@ -86,12 +89,12 @@ const Player=()=>{
         let action="";
 
         if(forward||backward||left||right){
-            action="wave";
+            action="walking";
             // if(shift){
             //     action="running"
             // }
         }else{
-            action="windmill";
+            action="standing";
         }
 
         if(currentAction.current!=action){
@@ -105,55 +108,60 @@ const Player=()=>{
 
 
     useFrame((state,delta)=>{
+        if (!isFocusMode) {
+        
+            if(currentAction.current=="walking"){
+                // 카메라 방향으로부터 회전 각도 계산
+                let angleYCameraDirection = Math.atan2(
+                    camera.position.x - model.scene.position.x,
+                    camera.position.z - model.scene.position.z
+                );
 
-      if (currentAction.current == "wave") {
-        // 카메라 방향으로부터 회전 각도 계산
-        let angleYCameraDirection = Math.atan2(
-            camera.position.x - model.scene.position.x,
-            camera.position.z - model.scene.position.z
-        );
+                // 입력에 따른 이동 방향 오프셋 계산
+                let newDirectionOffset = directionOffset({ forward, backward, left, right });
 
-        // 입력에 따른 이동 방향 오프셋 계산
-        let newDirectionOffset = directionOffset({ forward, backward, left, right });
+                // 모델의 회전 각도 업데이트
+                rotateQurternion.setFromAxisAngle(
+                    rotateAngle,
+                    angleYCameraDirection + newDirectionOffset
+                );
+                model.scene.quaternion.rotateTowards(rotateQurternion, 0.2);
 
-        // 모델의 회전 각도 업데이트
-        rotateQurternion.setFromAxisAngle(
-            rotateAngle,
-            angleYCameraDirection + newDirectionOffset
-        );
-        model.scene.quaternion.rotateTowards(rotateQurternion, 0.2);
+                // //최종 방향 계산
+                camera.getWorldDirection(walkDirection);
+                walkDirection.y=0;
+                walkDirection.normalize();
+                walkDirection.applyAxisAngle(rotateAngle,newDirectionOffset);
 
-        // //최종 방향 계산
-        camera.getWorldDirection(walkDirection);
-        walkDirection.y=0;
-        walkDirection.normalize();
-        walkDirection.applyAxisAngle(rotateAngle,newDirectionOffset);
+                //walk||run velocity
+                const velocity=30;
+                // const velocity=currentAction.current=="running"?10:5;
 
-        //walk||run velocity
-        const velocity=30;
-        // const velocity=currentAction.current=="running"?10:5;
+                //move model & camera
+                const moveX=walkDirection.x*velocity*delta;
+                const moveZ=walkDirection.z*velocity*delta;
+                model.scene.position.x+=moveX;
+                model.scene.position.z+=moveZ;
 
-        //move model & camera
-        const moveX=walkDirection.x*velocity*delta;
-        const moveZ=walkDirection.z*velocity*delta;
-        model.scene.position.x+=moveX;
-        model.scene.position.z+=moveZ;
-
-        updateCameraTarget(moveX,moveZ);
-    
+                updateCameraTarget(moveX,moveZ);
+            
+                }
+            }
         }
-      }
     );
-      return (
-          <>
-              <OrbitControls ref={controlsRef}/>
-              <primitive 
-                  object={model.scene}
-                  scale={1}
-                  position={[0,12,-200]}
-              />
-          </>
-      );
+
+    return (
+        <>
+             <OrbitControls ref={controlsRef}/>
+             <primitive 
+                object={model.scene}
+                scale={24}
+                position={[140,10,280]}
+                rotation={[0,180*Math.PI/180,0]}
+             />
+        </>
+    );
 };
 
 export default Player;
+

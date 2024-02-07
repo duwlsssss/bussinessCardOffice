@@ -86,16 +86,18 @@ function Element3D(){
                 intensity={45000}
                 // castShadow
             />
-            <Html 
-                className="monitorScreen" 
-                transform
-                occlude="blending"
-                position={[-1.6,106,23]}
-            >
-                <iframe src="https://kimssinemyeongham.netlify.app"
-                    style={{ width: '1600px', height: '1200px' }}
-                />
-            </Html>
+            <RigidBody type="fixed">
+                <Html 
+                    className="monitorScreen" 
+                    transform
+                    occlude="blending"
+                    position={[-1.6,106,23]}
+                >
+                    <iframe src="https://kimssinemyeongham.netlify.app"
+                        style={{ width: '1600px', height: '1200px' }}
+                    />
+                </Html>
+            </RigidBody>
             {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
             {/* <primitive
                 object={office_objects.scene} 

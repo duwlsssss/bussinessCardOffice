@@ -58,9 +58,8 @@ const NPC = ({controlsRef}) => {
 
 
   const handleNPCClick = () => {
-
-    const npcPosition = { x: -270, y: 140, z: -100 }; //npc 클릭 후 focus
-    const npcTarget = { x: -270, y: 140, z: -180 };
+    const npcPosition = { x: 105, y: 80, z:150 }; //npc 클릭 후 focus
+    const npcTarget = { x: 105, y: 70, z: 110 };
         
     console.log("npc Click")
 
@@ -109,7 +108,6 @@ const NPC = ({controlsRef}) => {
   return (
     <RigidBody 
       type="kinematicPosition"
-      ref={npcRef}
       name="NPC"
       //Player와 부딪혔을때 에니메이션
       onCollisionEnter={({other})=>{
@@ -125,6 +123,7 @@ const NPC = ({controlsRef}) => {
     >
       <primitive
         scale={0.7}
+        ref={npcRef}
         object={scene}
         position={[110,70,80]}
         onClick={() => handleNPCClick()}
