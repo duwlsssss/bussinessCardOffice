@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations,OrbitControls } from '@react-three/drei';
+import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { RigidBody,CapsuleCollider } from '@react-three/rapier';
 import useCameraStore from '../store/cameraStore';
@@ -149,7 +149,6 @@ const Player=()=>{
         }
     );
 
-
     // 카메라 포커스가 해제되었을 때의 처리
     useEffect(() => {
         if (!isFocused && playerRef.current) {
@@ -158,8 +157,8 @@ const Player=()=>{
             // 카메라를 플레이어의 위치로 부드럽게 이동
             gsap.to(camera.position, {
               x: playerPosition.x,
-              y: playerPosition.y + 5, // 카메라 높이 조정
-              z: playerPosition.z + 10, // 카메라와 플레이어 사이의 거리
+              y: playerPosition.y + 100, // 카메라 높이 조정
+              z: playerPosition.z + 90, // 카메라와 플레이어 사이의 거리
               duration: 1,
               ease: "power3.inOut",
               onUpdate: () => {

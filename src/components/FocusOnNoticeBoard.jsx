@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { gsap } from 'gsap';
+import useCameraStore from '../store/cameraStore';
 
 const FocusOnNoticeBoard = (controlsRef) => {
   const { camera } = useThree();
+  const { setFocus } = useCameraStore();
   const [beforeCamera, setBeforeCamera] = useState(null);
 
   const nbPosition = { x: -270, y: 140, z: -100 };
@@ -11,6 +13,7 @@ const FocusOnNoticeBoard = (controlsRef) => {
 
   const handleNoticeBoardClick = () => {
     console.log("nbClick")
+    setFocus({ x: -270, y: 140, z: -100 }); // 포커스 대상의 좌표
     if (!beforeCamera && controlsRef.current) {
       setBeforeCamera({
         position: camera.position.clone(),

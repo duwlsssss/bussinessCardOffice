@@ -3,6 +3,7 @@ import {useThree} from "@react-three/fiber"
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { RigidBody } from '@react-three/rapier';
 import { gsap } from 'gsap';
+import useCameraStore from '../store/cameraStore';
 
 const NPC = ({controlsRef}) => {
   const npcRef = useRef();
@@ -10,6 +11,7 @@ const NPC = ({controlsRef}) => {
   const { actions } = useAnimations(animations, npcRef);
   const { camera } = useThree();
   const [beforeCamera, setBeforeCamera] = useState(null);
+  const { setFocus } = useCameraStore();
   const [currentAnimation, setCurrentAnimation] = useState("wave");
 
   // console.log("actions",actions); //에니메이션 종류 확인 
@@ -62,6 +64,8 @@ const NPC = ({controlsRef}) => {
     const npcTarget = { x: 105, y: 70, z: 110 };
         
     console.log("npc Click")
+
+    setFocus({ x: 105, y: 80, z: 150 }); // 포커스 대상의 좌표
 
     if (!beforeCamera && controlsRef.current) {
         setBeforeCamera({
