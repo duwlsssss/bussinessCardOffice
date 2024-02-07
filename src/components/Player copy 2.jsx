@@ -40,13 +40,13 @@ const directionOffset = ({forward, backward, left, right})=>{
     return directionOffset;
 }
 
-const Player=()=>{
+const Player=(controlsRef)=>{
     const {camera}=useThree();
     const { isFocused, clearFocus } = useCameraStore();
 
     const playerRef=useRef();
     const rigidbody=useRef();
-    const currentAction =useRef();
+    const currentAction =useRef(null);
     const { forward, backward, left, right } = useInput();
 
     // 모델과 애니메이션 로드 상태를 추적하는 상태 변수
@@ -85,37 +85,31 @@ const Player=()=>{
     }
 
     useEffect(()=>{
-        let action="";
+        const action = forward || backward || left || right ? "walking" : "standing";
 
-        if(forward||backward||left||right){
-            action="walking";
-            // if(shift){
-            //     action="running"
-            // }
-        }else{
-            action="standing";
+        console.log(currentAction.current)
+        if(!currentAction.current||currentAction.current!==action){
+            if(actions[action]){
+                if (currentAction.current) {
+                    actions[currentAction.current].fadeOut(0.2);
+                }
+            }
+            currentAction.current = action;
+            actions[action].reset().fadeIn(0.2).play();
         }
-
-        if(currentAction.current!=action){
-            const nextActionToPlay=actions[action];
-            const current = actions[currentAction.current];
-            current?.fadeOut(0.2);
-            nextActionToPlay?.reset().fadeIn(0.2).play();
-            currentAction.current=action;
-        }
-    },[forward,backward,left,right,actions])
+    },[forward,backward,left,right,isFocused,actions])
 
 
     useFrame((state,delta)=>{
-            if(currentAction.current=="walking"){
+        let angleYCameraDirection;
+        let newDirectionOffset = directionOffset({ forward, backward, left, right });
+
+        if (forward || backward || left || right) {
                 // 카메라 방향으로부터 회전 각도 계산
-                let angleYCameraDirection = Math.atan2(
+                angleYCameraDirection = Math.atan2(
                     camera.position.x - scene.position.x,
                     camera.position.z - scene.position.z
                 );
-
-                // 입력에 따른 이동 방향 오프셋 계산
-                let newDirectionOffset = directionOffset({ forward, backward, left, right });
 
                 // 모델의 회전 각도 업데이트
                 rotateQurternion.setFromAxisAngle(
@@ -154,12 +148,12 @@ const Player=()=>{
             // 카메라를 플레이어의 위치로 부드럽게 이동
             gsap.to(camera.position, {
               x: playerPosition.x,
-              y: playerPosition.y + 100, // 카메라 높이 조정
-              z: playerPosition.z + 90, // 카메라와 플레이어 사이의 거리
+              y: playerPosition.y+90 , // 카메라 높이 조정
+              z: playerPosition.z+100, // 카메라와 플레이어 사이의 거리
               duration: 1,
               ease: "power3.inOut",
               onUpdate: () => {
-                // 카메라가 항상 플레이어를 바라보도록 업데이트
+                // 카메라가 플레이어를 바라보도록 업데이트
                 camera.lookAt(playerPosition.x, playerPosition.y, playerPosition.z);
               }
             });

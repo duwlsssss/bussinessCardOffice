@@ -5,7 +5,7 @@ import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
 import NPC from "./NPC";
-import Player from "./Player";
+import Player from "./Player copy 2";
 import FocusOnMonitor from "./focusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
 import { RigidBody } from "@react-three/rapier";
@@ -133,7 +133,7 @@ function Element3D(){
                 <meshStandardMaterial color={'orange'} />
             </mesh>
             <NPC controlsRef={controlsRef}/>
-            <Player/>
+            <Player controlsRef={controlsRef}/>
         </>
     );
 }
