@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import { RigidBody,CapsuleCollider } from '@react-three/rapier';
 import useCameraStore from '../store/cameraStore';
 import useInput from "../hooks/useInput"
-import { OrbitControls } from '@react-three/drei';
 import { gsap } from 'gsap/gsap-core';
 
 let walkDirection = new THREE.Vector3();
@@ -41,7 +40,7 @@ const directionOffset = ({forward, backward, left, right})=>{
     return directionOffset;
 }
 
-const Player=({controlsRef})=>{
+const Player=(controlsRef)=>{
     const {camera}=useThree();
     const { isFocused, clearFocus } = useCameraStore();
 
@@ -49,7 +48,6 @@ const Player=({controlsRef})=>{
     const rigidbody=useRef();
     const currentAction =useRef(null);
     const { forward, backward, left, right } = useInput();
-
 
     // 모델과 애니메이션 로드 상태를 추적하는 상태 변수
     const [isLoaded, setIsLoaded] = useState(false);
@@ -80,7 +78,7 @@ const Player=({controlsRef})=>{
         camera.position.x-=moveX;
         camera.position.z-=moveZ;
 
-        // //update camera target
+        //update camera target
         cameraTarget.x=scene.position.x;
         cameraTarget.y=scene.position.y;
         cameraTarget.z=scene.position.z;
@@ -101,6 +99,7 @@ const Player=({controlsRef})=>{
             actions[action].reset().fadeIn(0.2).play();
         }
     },[forward,backward,left,right,isFocused,actions])
+
 
     useFrame((state,delta)=>{
         let angleYCameraDirection;
@@ -127,7 +126,7 @@ const Player=({controlsRef})=>{
                 walkDirection.applyAxisAngle(rotateAngle,newDirectionOffset);
 
                 //walk||run velocity
-                const velocity=40;
+                const velocity=30;
                 // const velocity=currentAction.current=="running"?10:5;
 
                 //move model & camera
@@ -161,19 +160,15 @@ const Player=({controlsRef})=>{
             // 카메라를 플레이어의 위치로 부드럽게 이동
             gsap.to(camera.position, {
               x: playerPosition.x,
-              y: playerPosition.y+120 , // 카메라 높이 조정
-              z: playerPosition.z+150, // 카메라와 플레이어 사이의 거리
+              y: playerPosition.y+140 , // 카메라 높이 조정
+              z: playerPosition.z+100, // 카메라와 플레이어 사이의 거리
               duration: 1,
               ease: "power3.inOut",
+              onUpdate: () => {
+                // 카메라가 플레이어를 바라보도록 업데이트
+                camera.lookAt(playerPosition.x, playerPosition.y, playerPosition.z);
+              }
             });
-            gsap.to(controlsRef.current.target, {
-                x: playerPosition.x,
-                y: playerPosition.y,
-                z: playerPosition.z,
-                duration: 1,
-                ease: "power3.inOut",
-                onUpdate: () => { controlsRef.current.update(); },
-              });
           }
         }, [isFocused, camera, playerRef]);
 
@@ -192,8 +187,8 @@ const Player=({controlsRef})=>{
                 <primitive 
                     object={scene}
                     ref={playerRef}
-                    scale={35}
-                    position={[0,11,260]}
+                    scale={30}
+                    position={[0,10,260]}
                     rotation={[0,180*Math.PI/180,0]}
                 />
             {/*</RigidBody>*/}
