@@ -52,17 +52,18 @@ const Player=(controlsRef)=>{
     // 모델과 애니메이션 로드 상태를 추적하는 상태 변수
     const [isLoaded, setIsLoaded] = useState(false);
 
-    const { scene, animations } = useGLTF("./models/idle_.glb");
+    const { scene, animations } = useGLTF("./models/standing_idle.glb");
     const { actions } = useAnimations(animations, scene);
+    console.log("actions",actions)
 
     useEffect(() => {
         // 모델과 애니메이션 로드 상태를 감지하고, 상태를 업데이트
         const isLoaded = scene && actions && Object.keys(actions).length > 0;
         if (isLoaded) {
-            actions.standing.play();
+            actions.standing_kk.play();
         }
     }, [scene, actions]);
-    // 로드 완료 후 standing 애니메이션으로 설정
+    // 로드 완료 후 standing_kk 애니메이션으로 설정
 
     //그림자
     scene.traverse((obj) => {
@@ -85,7 +86,7 @@ const Player=(controlsRef)=>{
     }
 
     useEffect(()=>{
-        const action = forward || backward || left || right ? "walking" : "standing";
+        const action = forward || backward || left || right ? "walking_idle" : "standing_kk";
 
         console.log(currentAction.current)
         if(!currentAction.current||currentAction.current!==action){
@@ -135,8 +136,19 @@ const Player=(controlsRef)=>{
                 scene.position.z+=moveZ;
 
                 updateCameraTarget(moveX,moveZ);
-            
+
+                //  // 모델의 새 위치와 회전을 계산한 후, RigidBody의 상태를 업데이트
+                // if (rigidbody.current) {
+                //     // 위치 업데이트
+                //     rigidbody.current.setLinvel(new THREE.Vector3(moveX / delta, 0, moveZ / delta), true);
+
+                //     // 회전 업데이트 (예시로 쿼터니언을 사용)
+                //     const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), angleYCameraDirection + newDirectionOffset);
+                //     rigidbody.current.setRotation(q, true);
+                // }
                 }
+
+                
             }
     );
 
@@ -163,13 +175,15 @@ const Player=(controlsRef)=>{
 
     return (
         <>
-            {/* <RigidBody 
+            {/*<RigidBody 
                 name="Player"
                 ref={rigidbody}
                 colliders={false}
+                // scale={[1,1,1]}
+                type="kinematicPosition"
                 enabledRotations={[false, false, false]}
-            >
-                <CapsuleCollider args={[3, 18]} position={[0,30,240]} /> */}
+    >*/}
+                {/* <CapsuleCollider args={[10,20]} position={[-25,50,210]}/> */}
                 <primitive 
                     object={scene}
                     ref={playerRef}
@@ -177,7 +191,7 @@ const Player=(controlsRef)=>{
                     position={[0,10,240]}
                     rotation={[0,180*Math.PI/180,0]}
                 />
-            {/* </RigidBody> */}
+            {/*</RigidBody>*/}
         </>
     );
 };
