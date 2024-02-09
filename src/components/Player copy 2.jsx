@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import { RigidBody,CapsuleCollider } from '@react-three/rapier';
 import useCameraStore from '../store/cameraStore';
 import useInput from "../hooks/useInput"
-import { OrbitControls } from '@react-three/drei';
 import { gsap } from 'gsap/gsap-core';
 
 let walkDirection = new THREE.Vector3();
@@ -13,29 +12,31 @@ let rotateAngle = new THREE.Vector3(0,1,0);
 let rotateQurternion = new THREE.Quaternion();
 let cameraTarget= new THREE.Vector3();
 
+//캐릭터 방향 안바뀌어서 캐릭터 기준으로는 w뒤 a오 s앞 d왼 임!!
 const directionOffset = ({forward, backward, left, right})=>{
-    var directionOffset=0;//w
+    var directionOffset=0; 
 
-    if(backward){
-        if(left){
-            directionOffset=Math.PI/4; //w+a
-        }else if(right){
-            directionOffset=-Math.PI/4; //w+d
+    if(forward){
+        if (left) {
+            directionOffset = -3 * Math.PI / 4; // 왼쪽 앞
+        } else if (right) {
+            directionOffset = 3 * Math.PI / 4; // 오른쪽 앞
+        } else {
+            directionOffset = Math.PI; // 직진
         }
-    }else if(forward){
-        if(left){
-            directionOffset=Math.PI/4+Math.PI/2; //s+a
-        }else if(right){
-            directionOffset=-Math.PI/4-Math.PI/2; //s+d
-        }
-        else{
-            directionOffset=Math.PI; //s
+    }else if(backward){
+        if (right) {
+            directionOffset = Math.PI / 4; // 왼쪽 뒤
+        } else if (left) {
+            directionOffset = -Math.PI / 4; // 오른쪽 뒤
+        } else {
+            directionOffset = 0; // 후진
         }
     }else if(right){
-        directionOffset=Math.PI/2; //a
+        directionOffset=Math.PI/2; //d
     }
     else if(left){
-        directionOffset=-Math.PI/2; //d
+        directionOffset=-Math.PI/2; //a
     }
 
     return directionOffset;
@@ -50,13 +51,12 @@ const Player=({controlsRef})=>{
     const currentAction =useRef(null);
     const { forward, backward, left, right } = useInput();
 
-
     // 모델과 애니메이션 로드 상태를 추적하는 상태 변수
     const [isLoaded, setIsLoaded] = useState(false);
 
     const { scene, animations } = useGLTF("./models/standing_idle.glb");
     const { actions } = useAnimations(animations, scene);
-    console.log("actions",actions)
+    // console.log("actions",actions)
 
     useEffect(() => {
         // 모델과 애니메이션 로드 상태를 감지하고, 상태를 업데이트
@@ -75,12 +75,13 @@ const Player=({controlsRef})=>{
         }
     });
 
+    //카메라 타겟 업데이트
     const updateCameraTarget=(moveX, moveZ)=>{
         //move camera
         camera.position.x-=moveX;
         camera.position.z-=moveZ;
 
-        // //update camera target
+        //update camera target
         cameraTarget.x=scene.position.x;
         cameraTarget.y=scene.position.y;
         cameraTarget.z=scene.position.z;
@@ -90,17 +91,16 @@ const Player=({controlsRef})=>{
     useEffect(()=>{
         const action = forward || backward || left || right ? "walking_idle" : "standing_kk";
 
-        console.log(currentAction.current)
-        if(!currentAction.current||currentAction.current!==action){
+        if(!currentAction.current||currentAction.current!==action){ //현재 액션과 다음 액션이 다르면 
             if(actions[action]){
                 if (currentAction.current) {
                     actions[currentAction.current].fadeOut(0.2);
                 }
+                currentAction.current = action;
+                actions[action].reset().fadeIn(0.2).play();
             }
-            currentAction.current = action;
-            actions[action].reset().fadeIn(0.2).play();
         }
-    },[forward,backward,left,right,isFocused,actions])
+    },[forward,backward,left,right,actions])
 
     useFrame((state,delta)=>{
         let angleYCameraDirection;
