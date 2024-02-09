@@ -180,15 +180,15 @@ const Player=({controlsRef})=>{
 
     return (
         <>
-            {/*<RigidBody 
+            <RigidBody 
                 name="Player"
                 ref={rigidbody}
                 colliders={false}
                 // scale={[1,1,1]}
                 type="kinematicPosition"
                 enabledRotations={[false, false, false]}
-    >*/}
-                {/* <CapsuleCollider args={[10,20]} position={[-25,50,210]}/> */}
+            >
+                <CapsuleCollider args={[10,20]} position={[-25,50,210]}/>
                 <primitive 
                     object={scene}
                     ref={playerRef}
@@ -196,7 +196,7 @@ const Player=({controlsRef})=>{
                     position={[0,11,260]}
                     rotation={[0,180*Math.PI/180,0]}
                 />
-            {/*</RigidBody>*/}
+            </RigidBody>
         </>
     );
 };
