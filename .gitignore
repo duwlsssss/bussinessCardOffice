@@ -8,6 +8,7 @@ lerna-debug.log*
 node_modules/
 # public/
 *.local
+netlify.toml
 
 # Editor directories and files
 .vscode/*

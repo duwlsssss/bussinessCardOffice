@@ -33,7 +33,7 @@ const Player=({controlsRef})=>{
     //충돌 상태 
     const [isCollided, setIsCollided] = useState(false);
 
-    const { scene, animations } = useGLTF("./models/standing_55.glb");
+    const { scene, animations } = useGLTF("/standing_55.glb");
     const { actions } = useAnimations(animations, scene);
     // console.log("actions",actions)
 

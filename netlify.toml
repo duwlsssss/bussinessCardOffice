@@ -1,4 +1,2 @@
-[[headers]]
-  for = "/models/*.glb"
-  [headers.values]
-  Content-Type = "model/gltf-binary"
+/models/*.glb
+  Content-Type: model/gltf-binary
