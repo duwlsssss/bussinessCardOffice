@@ -5,7 +5,7 @@ import useCameraStore from '../store/cameraStore';
 
 const FocusOnMonitor = (controlsRef) => {
   const { camera } = useThree();
-  const { setFocus } = useCameraStore();
+  const { setFocus,clearFocus } = useCameraStore();
   const [beforeCamera, setBeforeCamera] = useState(null);
 
   const nbPosition = { x: -1.6, y: 106, z: 50 };
@@ -50,10 +50,13 @@ const FocusOnMonitor = (controlsRef) => {
         duration: 1,
         ease: "power3.inOut",
         onUpdate: () => { controlsRef.current.update(); },
-        onComplete: () => { setBeforeCamera(null); },
+        onComplete: () => { 
+          setBeforeCamera(null);
+          clearFocus();
+        },
       });
     }
-  };
+  }
 
   return { handleMonitorClick };
 };

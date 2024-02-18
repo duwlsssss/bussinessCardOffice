@@ -50,7 +50,9 @@ const FocusOnNoticeBoard = (controlsRef) => {
         duration: 1,
         ease: "power3.inOut",
         onUpdate: () => { controlsRef.current.update(); },
-        onComplete: () => { setBeforeCamera(null); },
+        onComplete: () => { 
+          setBeforeCamera(null); 
+          clearFocus();},
       });
     }
   };

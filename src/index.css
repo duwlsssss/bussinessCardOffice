@@ -1,0 +1,58 @@
+.speech-bubble-text {
+  color: black;
+  font-size: 200px; 
+  padding: 1px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width:100%;
+  height:auto;
+}
+
+.print-canvas {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* 화면의 전체 높이를 차지하도록 설정 */
+  width: 100vw; /* 화면의 전체 너비를 차지하도록 설정 */
+}
+
+.cute-card {
+  position: relative;
+  height: 120rem;
+  width: 200rem;
+  font-size: 5rem;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 219, 112, 1) 45%, rgba(132, 50, 255, 1) 50%, transparent 54%);
+  filter: brightness(1.1) opacity(1);
+  mix-blend-mode: color-dodge;
+  background-size: 150% 150%;
+  background-position: 100%;
+  transition: all 0.1s;
+}
+
+.back {
+  position: absolute;
+  top: -60rem;
+  right: -50rem;
+  padding: 1.3rem;
+  font-size: 5rem; 
+  cursor: pointer; /* 오타 수정: 'curcor' → 'cursor' */
+  background: rgba(255, 255, 255);
+  border-radius: 1rem;
+}

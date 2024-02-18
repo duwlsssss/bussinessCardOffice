@@ -1,7 +1,7 @@
 import {Canvas} from '@react-three/fiber'
-import React, { Suspense, useMemo, lazy } from 'react'
+import React, { Suspense, useMemo, useState, lazy } from 'react'
 import { Physics } from '@react-three/rapier'
-import { KeyboardControls } from '@react-three/drei'
+import { KeyboardControls} from '@react-three/drei'
 import Loader from './components/Loader';
 import * as THREE from 'three';
 import "./App.css"
@@ -12,7 +12,7 @@ export const Controls = {
   back: "back",
   left: "left",
   right: "right",
-}
+};
 
 // const LazyComponent = lazy(() => import('./components/Element3D'));
 
@@ -27,8 +27,8 @@ function App() {
     ], []
   );
 
+  
   return (
-    <>
       <KeyboardControls map={map}>
         <Canvas
           shadows
@@ -39,15 +39,14 @@ function App() {
             far: 5000,
           }}
         >
-          <Suspense fallback={<Loader />}>
+          <Suspense fallback={<Loader/>}>
             <Physics debug> 
               <Element3D/>
             </Physics>
           </Suspense>
         </Canvas>
       </KeyboardControls>
-  </>
   );
 }
 
-export default App
+export default App;

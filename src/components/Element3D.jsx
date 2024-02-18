@@ -5,13 +5,11 @@ import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
 import NPC from "./NPC";
-import Player from "./Player copy 2";
-import FocusOnMonitor from "./focusOnMonitor";
+import Player from "./PlayerFinal";
+import FocusOnMonitor from "./FocusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
-import { RigidBody } from "@react-three/rapier";
-import { Controls } from '../App';
-// import Player_ from "./Player_";
-
+import { RigidBody, CuboidCollider } from "@react-three/rapier";
+import PrintCard from "./PrintCard";
 
 function Element3D(){
     // const office_objects = useGLTF('./models/office_objects.glb')
@@ -54,29 +52,41 @@ function Element3D(){
     const controlsRef = useRef();
     const { handleMonitorClick } = FocusOnMonitor(controlsRef);
     const { handleNoticeBoardClick } = FocusOnNoticeBoard(controlsRef);
-    
+
+    //배경 테스트용 맵
+    const map = useGLTF("models/map.glb");
+    useEffect(() => {
+      map.scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+    });
+
+
     return(
         <>
             <OrbitControls ref={controlsRef} />
             <axesHelper args={[500, 500, 500]} /> {/*월드좌표축*/}
             <Stats/>
-            <Environment preset="forest" backgroud/>
+            <Environment preset="forest" background/>
             <directionalLight
-                    ref={directionalLightRef}
-                    intensity={1}
-                    position={[-100,400,0]}
-                    color={"#fdfbfb"}
-                    castShadow
-                    shadow-camera-left={-500}
-                    shadow-camera-right={500}
-                    shadow-camera-top={500}
-                    shadow-camera-bottom={-500}
-                    shadow-camera-near={10}
-                    shadow-camera-far={1000}
-                    shadow-mapSize-width={10000}
-                    shadow-mapSize-height={10000}
-                />             
-            <spotLight
+                ref={directionalLightRef}
+                intensity={1}
+                position={[-100,400,0]}
+                color={"#fdfbfb"}
+                castShadow
+                shadow-camera-left={-500}
+                shadow-camera-right={500}
+                shadow-camera-top={500}
+                shadow-camera-bottom={-500}
+                shadow-camera-near={10}
+                shadow-camera-far={1000}
+                shadow-mapSize-width={10000}
+                shadow-mapSize-height={10000}
+            />             
+            {/* <spotLight
                 ref={spotLightRef}
                 position={[-100,115,162]} // 램프의 위치에 맞게 조정
                 target-position={[-100,0,162]}
@@ -85,15 +95,15 @@ function Element3D(){
                 color={"gold"}
                 intensity={45000}
                 // castShadow
-            />
+            /> */}
             <RigidBody type="fixed">
                 <Html 
                     className="monitorScreen" 
                     transform
                     occlude="blending"
-                    position={[-1.6,106,23]}
+                    position={[-1.6,106.5,24]}
                 >
-                    <iframe src="https://kimssinemyeongham.netlify.app"
+                    <iframe src="https://kimmyungsa.netlify.app"
                         style={{ width: '1600px', height: '1200px' }}
                     />
                 </Html>
@@ -109,7 +119,19 @@ function Element3D(){
                 scale={1.1}
                 position={[100,0,63]}
              />  */}
-            <RigidBody type="fixed"
+            {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
+            {/* <primitive
+                object={office_objects.scene} 
+                scale={1.1}
+                position={[100,0,63]}
+            /> 
+            <primitive
+                object={floor.scene} 
+                scale={1.1}
+                position={[100,0,63]}
+             />  */}
+            <RigidBody 
+                type="fixed"
                 scale={1.8}
                 position={[-110,-10,90]}
                 rotation={[0, -90 * Math.PI / 180, 0]} 
@@ -119,7 +141,7 @@ function Element3D(){
                     onClick={handleMonitorClick} // 이벤트 핸들러 수정
                 />
             </RigidBody>
-            <RigidBody type="fixed" 
+            {/* <RigidBody type="fixed" 
                 scale={1.1}
                 position={[-70,0,63]}
                 rotation={[0, -90 * Math.PI / 180, 0]}
@@ -127,13 +149,23 @@ function Element3D(){
                 <primitive
                     object={office.scene}
                 />
+            </RigidBody> */}
+
+            <RigidBody colliders={false} type="fixed" name="void">
+                <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                    <planeGeometry args={[500, 500]} />
+                    <meshBasicMaterial color="#e3daf7" />
+                </mesh>
+                <CuboidCollider position={[0, 0, 0]} args={[500, 0, 500]} />
             </RigidBody>
+
             <mesh onClick={handleNoticeBoardClick} position={[-260, 150, -200]}>
                 <boxGeometry args={[10, 10, 10]} />
                 <meshStandardMaterial color={'orange'} />
             </mesh>
             <NPC controlsRef={controlsRef}/>
             <Player controlsRef={controlsRef}/>
+            <PrintCard controlsRef={controlsRef}/>
         </>
     );
 }
