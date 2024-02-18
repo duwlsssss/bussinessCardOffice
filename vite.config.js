@@ -1,9 +1,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import copy from 'rollup-plugin-copy'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(),
+  plugins: [
+    copy({
+      targets: [
+        { src: 'public/models/*', dest: 'dist/models' }
+      ],
+      hook: 'writeBundle' // 빌드 과정의 특정 시점에 복사 작업을 수행
+    }),
+    react(),
     {
       name: 'ignore-lottie-eval-warning',
       buildStart(options) {
@@ -18,8 +26,8 @@ export default defineConfig({
       }
     }],
   build: {
-    // 청크 크기 경고 한계를 2000kB로 설정
-    chunkSizeWarningLimit: 3000,
+    // 청크 크기 경고 한계를 5MB로 설정
+    chunkSizeWarningLimit: 5000,
     rollupOptions: {
       output: {
         // 수동 청크 설정
@@ -29,8 +37,8 @@ export default defineConfig({
             return 'vendor';
           }
         },   
+      }
     }
   }
-}
 })
 
