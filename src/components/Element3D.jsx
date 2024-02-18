@@ -15,8 +15,7 @@ function Element3D(){
     // const office_objects = useGLTF('./models/office_objects.glb')
     // const floor = useGLTF('./models/wall_floor.glb')
     const monitor = useGLTF('/models/monitor.glb')
-    const office = useGLTF('/models/office.glb')
-    const {scene,animations} = useGLTF('/models/dancer.glb');
+    // const office = useGLTF('/models/office.glb')
 
     //조명 헬퍼
     const directionalLightRef = useRef();
