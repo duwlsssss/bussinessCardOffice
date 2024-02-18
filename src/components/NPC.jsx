@@ -19,7 +19,7 @@ const messages = [
 
 const NPC = ({controlsRef}) => {
   const npcRef = useRef();
-  const { scene, animations } = useGLTF("/models/dancer.glb");
+  const { scene, animations } = useGLTF("./models/dancer.glb");
   const { actions } = useAnimations(animations, npcRef);
   const { camera } = useThree();
   const [beforeCamera, setBeforeCamera] = useState(null);
