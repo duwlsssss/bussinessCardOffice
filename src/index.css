@@ -1,13 +1,40 @@
-.speech-bubble-text {
-  color: black;
-  font-size: 200px; 
-  padding: 1px; 
+/*
+.speech-bubble {
+  pointer-events: none;
+  height: 200rem;
+  width: 300rem;
+  background-color: aliceblue;
   display: flex;
   justify-content: center;
   align-items: center;
-  text-align: center;
-  width:100%;
-  height:auto;
+  padding: 10px; 
+  box-sizing: border-box;
+  background-image: url('/images/speechBubble.png'); 
+  background-size: cover; 
+  background-position: center; 
+  background-repeat: no-repeat; 
+}  
+*/
+
+.speech-bubble-text {
+  background-color: ;
+  font-size: 20rem;
+  margin-top: -30rem;
+  margin-left: 10rem;
+  color: black;
+  white-space: nowrap; /* 줄바꿈 방지 */
+}
+
+@keyframes typing {
+  from {
+    width: 0
+  }
+}
+    
+@keyframes blink {
+  50% {
+    border-color: transparent
+  }
 }
 
 .print-canvas {

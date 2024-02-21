@@ -118,16 +118,19 @@ const Player=({controlsRef})=>{
                 const angle = Math.atan2(linvel.x, linvel.z);
                 playerRef.current.rotation.y = angle;
                 }
+
             }
             // CAMERA FOLLOW
             const characterWorldPosition = playerRef.current.getWorldPosition(
                 new THREE.Vector3()
                 );
 
+                setPlayerPosition(characterWorldPosition.x,characterWorldPosition.y,characterWorldPosition.z);
+
                 const targetCameraPosition = new THREE.Vector3(
                 characterWorldPosition.x,
-                characterWorldPosition.y + 170,
-                characterWorldPosition.z + 120
+                characterWorldPosition.y + 130,
+                characterWorldPosition.z + 100
                 );
 
                 state.camera.position.lerp(targetCameraPosition, delta * 20);
@@ -136,7 +139,7 @@ const Player=({controlsRef})=>{
                 if (controlsRef && controlsRef.current) {
                     controlsRef.current.target.set(
                     characterWorldPosition.x,
-                    0, 
+                    characterWorldPosition.y + 65,
                     characterWorldPosition.z
                     );
                     controlsRef.current.update(); // 필요한 경우 OrbitControls 업데이트
@@ -144,14 +147,15 @@ const Player=({controlsRef})=>{
         }
     })
 
-    useEffect(() => {
-        if (scene) {
-            const box = new THREE.Box3().setFromObject(scene);
-            const size = new THREE.Vector3();
-            box.getSize(size);
-            console.log("Model Height:", size.y);
-        }
-    }, [scene]);
+    // 캐릭터 크기
+    // useEffect(() => {
+    //     if (scene) {
+    //         const box = new THREE.Box3().setFromObject(scene);
+    //         const size = new THREE.Vector3();
+    //         box.getSize(size);
+    //         console.log("Model Height:", size.y);
+    //     }
+    // }, [scene]);
     
 
     return (
@@ -161,11 +165,10 @@ const Player=({controlsRef})=>{
                 ref={rigidbody}
                 colliders={false}
                 enabledRotations={[false,false,false]}
-                sclae={[0.5,0.5,0.5]}
             >
                 <CapsuleCollider 
                     args={[14,30]} 
-                    position={[0,48,180]}
+                    position={[0,40,180]}
                     onCollisionEnter={(other)=>{
                         if(other.rigidBodyObject.name!=="void"){
                             console.log("충돌 발생",other.rigidBodyObject.name);
@@ -182,8 +185,8 @@ const Player=({controlsRef})=>{
                 <primitive 
                     object={scene}
                     ref={playerRef}
-                    scale={35}
-                    position={[0,25,180]}
+                    scale={33}
+                    position={[0,-5,180]}
                     rotation={[0,180*Math.PI/180,0]}
                 />
             </RigidBody>

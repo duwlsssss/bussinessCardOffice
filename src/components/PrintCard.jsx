@@ -132,12 +132,12 @@ const PrintCard = ({controlsRef}) => {
                     }} 
                     onMouseMove={handleMouseMove}
                   >
-                      <div className="overlay"/>
-                      <p>🔖이름: {receivedData.data.name}</p>
-                      <p>📬E-mail: {receivedData.data.email}</p>
-                      <p>🎓학교: {receivedData.data.school}</p>
-                      <p>🥕MBTI: {receivedData.data.MBTI}</p>
-                      <p>🔖IG: {receivedData.data.ig}</p>  
+                  <div className="overlay"/>
+                    <p>🔖이름: {receivedData?.data?.name || 'N/A'}</p>
+                    <p>📬E-mail: {receivedData?.data?.email || 'N/A'}</p>
+                    <p>🎓학교: {receivedData?.data?.school || 'N/A'}</p>
+                    <p>🥕MBTI: {receivedData?.data?.MBTI || 'N/A'}</p>
+                    <p>🔖IG: {receivedData?.data?.ig || 'N/A'}</p>  
                   </div>
                 </div>
               </Html>
