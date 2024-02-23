@@ -1,63 +1,46 @@
-/*
 .speech-bubble {
-  pointer-events: none;
-  height: 200rem;
-  width: 300rem;
-  background-color: aliceblue;
+  /* background-color: red; */
   display: flex;
+  margin-top: -30rem;
   justify-content: center;
   align-items: center;
-  padding: 10px; 
-  box-sizing: border-box;
-  background-image: url('/images/speechBubble.png'); 
-  background-size: cover; 
-  background-position: center; 
-  background-repeat: no-repeat; 
-}  
-*/
+  width: 220rem; 
+  height: 100rem; 
+  overflow: hidden; /* 내용이 넘칠 경우 숨깁니다. */
+}
 
 .speech-bubble-text {
-  background-color: ;
   font-size: 20rem;
-  margin-top: -30rem;
-  margin-left: 10rem;
+  max-width: 100%;
   color: black;
-  white-space: nowrap; /* 줄바꿈 방지 */
+  white-space: normal; /* 줄바꿈을 허용합니다. */
+  text-align: center; /* 텍스트를 중앙 정렬합니다. */
 }
 
-@keyframes typing {
-  from {
-    width: 0
-  }
-}
-    
-@keyframes blink {
-  50% {
-    border-color: transparent
-  }
-}
 
 .print-canvas {
+  background: rgba(255, 255, 255, 0.7);
+  width:100vw;
+  height:100vh;
+  border-radius: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* 화면의 전체 높이를 차지하도록 설정 */
-  width: 100vw; /* 화면의 전체 너비를 차지하도록 설정 */
 }
 
 .cute-card {
   position: relative;
-  height: 120rem;
-  width: 200rem;
-  font-size: 5rem;
+  width: 60vw;
+  height: 40vw; 
+  font-size: 2rem;
   background: rgba(255, 255, 255, 0.96);
-  border-radius: 5rem;
+  border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  overflow: hidden;
+  cursor: pointer; /*클릭시 qr 출력 위함*/
 }
 .overlay {
   position: absolute;
@@ -73,13 +56,25 @@
   transition: all 0.1s;
 }
 
+.qr-description{
+  position: absolute;
+  top: 45rem;
+  padding: 0.5rem;
+  font-size: 1.5rem; 
+  background-color: bisque;
+}
+
+.QR{
+  position: absolute;
+}
+
 .back {
   position: absolute;
-  top: -60rem;
-  right: -50rem;
-  padding: 1.3rem;
-  font-size: 5rem; 
-  cursor: pointer; /* 오타 수정: 'curcor' → 'cursor' */
+  top: 3.5rem;
+  right: 3rem;
+  padding: 0.5rem;
+  font-size: 1.5rem; 
+  cursor: pointer;
   background: rgba(255, 255, 255);
   border-radius: 1rem;
 }

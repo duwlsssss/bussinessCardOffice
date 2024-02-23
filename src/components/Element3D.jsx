@@ -152,10 +152,10 @@ function Element3D(){
 
             <RigidBody colliders={false} type="fixed" name="void">
                 <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                    <planeGeometry args={[500, 500]} />
+                    <planeGeometry args={[1000, 1000]} />
                     <meshBasicMaterial color="#e3daf7" />
                 </mesh>
-                <CuboidCollider position={[0, 0, 0]} args={[500, 0, 500]} />
+                <CuboidCollider position={[0, 0, 0]} args={[1000, 0, 1000]} />
             </RigidBody>
 
             <mesh onClick={handleNoticeBoardClick} position={[-260, 150, -200]}>

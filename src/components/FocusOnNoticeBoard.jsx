@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { gsap } from 'gsap';
 import useCameraStore from '../store/cameraStore';
+import usePlayerStore from  "../store/playerStore";
 
 const FocusOnNoticeBoard = (controlsRef) => {
+  const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
   const { camera } = useThree();
-  const { setFocus } = useCameraStore();
+  const { setFocus, clearFocus } = useCameraStore();
   const [beforeCamera, setBeforeCamera] = useState(null);
 
   const nbPosition = { x: -270, y: 140, z: -100 };
@@ -13,6 +15,7 @@ const FocusOnNoticeBoard = (controlsRef) => {
 
   const handleNoticeBoardClick = () => {
     console.log("nbClick")
+    setIsVisible(false); // 플레이어를 숨김
     setFocus({ x: -270, y: 140, z: -100 }); // 포커스 대상의 좌표
     if (!beforeCamera && controlsRef.current) {
       setBeforeCamera({
@@ -36,6 +39,7 @@ const FocusOnNoticeBoard = (controlsRef) => {
         onUpdate: () => { controlsRef.current.update(); },
       });
     } else if(beforeCamera && controlsRef && controlsRef.current) {
+      setIsVisible(true); // 플레이어를 다시 표시
       gsap.to(camera.position, {
         x: beforeCamera.position.x,
         y: beforeCamera.position.y,

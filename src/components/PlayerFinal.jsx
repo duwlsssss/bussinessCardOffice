@@ -3,8 +3,8 @@ import { useThree,useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
 import useCameraStore from '../store/cameraStore';
-import useInput from "../hooks/useInput"
-import { gsap } from 'gsap/gsap-core';
+// import useInput from "../hooks/useInput"
+// import { gsap } from 'gsap/gsap-core';
 import usePlayerStore from  "../store/playerStore"
 import { RigidBody,CapsuleCollider } from '@react-three/rapier';
 import {Controls} from '../App'
@@ -13,9 +13,9 @@ const MOVEMENT_SPEED = 500000;
 const MAX_VEL = 1000000;
 
 const Player=({controlsRef})=>{
-    const {camera}=useThree();
     const { isFocused, clearFocus } = useCameraStore();
     const setPlayerPosition = usePlayerStore(state => state.setPlayerPosition);
+    const isVisible = usePlayerStore(state => state.isVisible);
 
     const playerRef=useRef();
     const rigidbody=useRef();
@@ -54,6 +54,15 @@ const Player=({controlsRef})=>{
         }
     });
 
+     //player의 가시성
+     useEffect(() => {
+        if (playerRef.current) {
+          // 플레이어 객체의 가시성 설정
+          playerRef.current.visible = isVisible;
+        }
+      }, [isVisible]);
+
+    
     useEffect(()=>{
         const action = forwardPressed || backPressed || leftPressed || rightPressed ? "walkkk" : "standing_55";
 
@@ -121,29 +130,27 @@ const Player=({controlsRef})=>{
 
             }
             // CAMERA FOLLOW
-            const characterWorldPosition = playerRef.current.getWorldPosition(
-                new THREE.Vector3()
-                );
+            const characterWorldPosition = playerRef.current.getWorldPosition(new THREE.Vector3());
 
-                setPlayerPosition(characterWorldPosition.x,characterWorldPosition.y,characterWorldPosition.z);
+            setPlayerPosition(characterWorldPosition.x,characterWorldPosition.y,characterWorldPosition.z);
 
-                const targetCameraPosition = new THREE.Vector3(
+            const targetCameraPosition = new THREE.Vector3(
+            characterWorldPosition.x,
+            characterWorldPosition.y + 130,
+            characterWorldPosition.z + 100
+            );
+
+            state.camera.position.lerp(targetCameraPosition, delta * 20);
+
+            // 카메라 시선(Target) 업데이트
+            if (controlsRef && controlsRef.current) {
+                controlsRef.current.target.set(
                 characterWorldPosition.x,
-                characterWorldPosition.y + 130,
-                characterWorldPosition.z + 100
+                characterWorldPosition.y + 65,
+                characterWorldPosition.z
                 );
-
-                state.camera.position.lerp(targetCameraPosition, delta * 20);
-
-                // 카메라 시선(Target) 업데이트
-                if (controlsRef && controlsRef.current) {
-                    controlsRef.current.target.set(
-                    characterWorldPosition.x,
-                    characterWorldPosition.y + 65,
-                    characterWorldPosition.z
-                    );
-                    controlsRef.current.update(); // 필요한 경우 OrbitControls 업데이트
-                }                              
+                controlsRef.current.update(); // 필요한 경우 OrbitControls 업데이트
+            }                              
         }
     })
 
@@ -167,7 +174,7 @@ const Player=({controlsRef})=>{
                 enabledRotations={[false,false,false]}
             >
                 <CapsuleCollider 
-                    args={[14,30]} 
+                    args={[20,30]} 
                     position={[0,40,180]}
                     onCollisionEnter={(other)=>{
                         if(other.rigidBodyObject.name!=="void"){
