@@ -30,7 +30,8 @@ const NPC = ({controlsRef}) => {
   const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
 
   // console.log("actions",actions); //에니메이션 종류 확인 
-  const texture = useLoader(TextureLoader, '/images/speechBubble.png');
+  // const texture = useLoader(TextureLoader, '/images/speechBubble.png');
+  const texture = useLoader(TextureLoader, '/images/speechBubble2.png');
 
   // const three=useThree();
   // console.log("three",three);//정보 출력
@@ -90,8 +91,8 @@ const NPC = ({controlsRef}) => {
     setShowSpeechBubble(true); // 말풍선 표시
     setIsVisible(false); // 플레이어를 숨김
 
-    const npcPosition = { x: 130, y: 70, z:180 }; 
-    const npcTarget = { x: 130, y: 70, z: 150 };
+    const npcPosition = { x: 130, y: 70, z: 1350 }; 
+    const npcTarget = { x: 130, y: 70, z: 1350 };
 
     setFocus(npcPosition); // 포커스 대상 좌표 설정
 
@@ -118,7 +119,6 @@ const NPC = ({controlsRef}) => {
     }
     setCurrentAnimation((prev) => prev==="walkkk" ? "null" : "walkkk")
 
-    resetPlayerRotationTrigger();
   }
 
   const handleBackClick=() => {
@@ -162,7 +162,7 @@ const NPC = ({controlsRef}) => {
     >
       <CapsuleCollider 
         args={[20,30]} 
-        position={[130,40,10]}
+        position={[130,45,1210]}
         //Player와 부딪혔을때 에니메이션
         onCollisionEnter={(other)=>{
           if(other.rigidBodyObject.name==="Player"){
@@ -182,41 +182,41 @@ const NPC = ({controlsRef}) => {
         object={scene}
         ref={npcRef}
         scale={33}
-        position={[130,0,10]}
+        position={[130,0,1210]}
       />
       {/* showSphere 상태가 true일 때 */}
-    {showSphere && (
-      <mesh position={[130, 115, 20]} onClick={handleSphereClick}>
-        <sphereGeometry args={[5, 24, 24]} />
-        <meshStandardMaterial color={"green"} />
+      {showSphere && (
+        <mesh position={[130, 115, 1220]} onClick={handleSphereClick}>
+          <sphereGeometry args={[5, 24, 24]} />
+          <meshStandardMaterial color={"green"} />
+        </mesh>
+      )}
+      {/* showSpeechBubble 상태가 true일 때 */}
+      {showSpeechBubble && (
+        <mesh position={[134, 142, 1220]}>
+          <planeGeometry args={[150, 80]} />
+          <meshBasicMaterial map={texture} transparent={true}/>
+        </mesh>
+      )}
+      {showSpeechBubble && (
+        <Html position={[130, 140, 1220]} transform occlude>
+          <div className='speech-bubble'>
+            <div className="speech-bubble-text">{message}</div>
+          </div>
+        </Html>
+      )}
+      {showSpeechBubble && (
+      <mesh position={[190, 160, 1220]} onClick={handleBackClick}>
+        <boxGeometry args={[5, 5, 5]} />
+        <meshStandardMaterial color={"red"} />
       </mesh>
-    )}
-    {/* showSpeechBubble 상태가 true일 때 */}
-    {showSpeechBubble && (
-      <mesh position={[134, 142, 20]}>
-        <planeGeometry args={[150, 80]} />
-        <meshBasicMaterial map={texture} transparent={true}/>
+      )}
+      {showSpeechBubble&&(
+      <mesh position={[190, 120, 1220]} onClick={handleNextClick}>
+        <boxGeometry args={[5, 5, 5]} />
+        <meshStandardMaterial color={"blue"} />
       </mesh>
-    )}
-    {showSpeechBubble && (
-      <Html position={[130, 140, 21]} transform occlude>
-        <div className='speech-bubble'>
-          <div className="speech-bubble-text">{message}</div>
-        </div>
-      </Html>
-    )}
-    {showSpeechBubble && (
-    <mesh position={[178, 160, 20]} onClick={handleBackClick}>
-      <boxGeometry args={[5, 5, 5]} />
-      <meshStandardMaterial color={"red"} />
-    </mesh>
-    )}
-    {showSpeechBubble&&(
-    <mesh position={[178, 133, 20]} onClick={handleNextClick}>
-      <boxGeometry args={[5, 5, 5]} />
-      <meshStandardMaterial color={"blue"} />
-    </mesh>
-    )}
+      )}
     </RigidBody>
   );
 };

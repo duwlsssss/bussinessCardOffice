@@ -1,6 +1,6 @@
 import React,{useEffect,useRef, useState} from "react"
 import { useLoader, useFrame, useThree, extend} from '@react-three/fiber';
-import { useGLTF, Environment, Html, OrbitControls, } from "@react-three/drei"
+import { useGLTF, Environment, Html, OrbitControls,Text} from "@react-three/drei"
 import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
@@ -10,11 +10,17 @@ import FocusOnMonitor from "./FocusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import PrintCard from "./PrintCard";
+import Library from "./Gallery";
+import { initSplineTexture } from "three-stdlib";
 
 function Element3D(){
+    const [isInside, setIsInside]=useState(false);
+    const arrowRef = useRef();
+
     // const office_objects = useGLTF('./models/office_objects.glb')
     // const floor = useGLTF('./models/wall_floor.glb')
     const monitor = useGLTF('/models/monitor.glb')
+    const office_outside = useGLTF('/models/office_outside.glb')
     // const office = useGLTF('/models/office.glb')
 
     //조명 헬퍼
@@ -26,43 +32,27 @@ function Element3D(){
     // const three=useThree();
     // console.log("three",three);//정보 출력 
 
-    // //그림자 넣기
-    // useEffect(() => {
-    //     office_objects.scene.traverse(child => {
-    //         if (child.isMesh) {
-    //             child.castShadow = true;
-    //             child.receiveShadow = true;
-    //         }
-    //     });
-    //     floor.scene.traverse(child => {
-    //         if (child.isMesh) {
-    //             child.receiveShadow = true;
-    //         }
-    //     });
-    //     monitor.scene.traverse(child => {
-    //         if (child.isMesh) {
-    //             child.castShadow = true;
-    //             child.receiveShadow = true;
-    //         }
-    //     });
+    //그림자 넣기
+    useEffect(() => {
+        office_outside.scene.traverse(child => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
+    }, [office_outside]);
 
-    // }, [ office_objects, floor, monitor ]);
+    //화살표 에니메이션
+    useFrame((state, delta) => {
+        if (arrowRef.current) { // arrowRef.current가 존재하는지 확인
+            arrowRef.current.position.y += Math.sin(state.clock.getElapsedTime() * 3) * 0.1;
+        }
+    });
+
 
     const controlsRef = useRef();
     const { handleMonitorClick } = FocusOnMonitor(controlsRef);
-    const { handleNoticeBoardClick } = FocusOnNoticeBoard(controlsRef);
-
-    //배경 테스트용 맵
-    const map = useGLTF("/models/map.glb");
-    useEffect(() => {
-      map.scene.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-    });
-
+    // const { handleNoticeBoardClick } = FocusOnNoticeBoard(controlsRef);
 
     return(
         <>
@@ -95,6 +85,74 @@ function Element3D(){
                 intensity={45000}
                 // castShadow
             /> */}
+
+            {!isInside&&(
+            <RigidBody
+                type="fixed"
+                colliders="trimesh"
+                scale={10}
+                position={[30,-58,300]}
+                rotation={[0, 90 * Math.PI / 180, 0]} 
+            >
+                <primitive
+                    object={office_outside.scene}
+                />
+            </RigidBody>
+            )}
+            {/*안으로 들어가는 문*/}
+            {!isInside&&(
+            <RigidBody type="fixed" name="GoInDoor"
+                onCollisionEnter={(other)=>{
+                    if(other.rigidBodyObject.name==="Player"){
+                      console.log("들어가는 문과 캐릭터와 충돌 발생",other.rigidBodyObject.name);
+                      setIsInside(true);
+                  }}}
+            >
+                <mesh position={[0, 59, 410]}>
+                    <boxGeometry args={[50, 100, 10]} />
+                    <meshBasicMaterial color="red"/>
+                </mesh>
+            </RigidBody>
+            )}
+            {/*밖으로 나가는 문*/}
+            {isInside&&(
+            <RigidBody type="fixed" name="GoOutDoor"
+                onCollisionEnter={(other)=>{
+                    if(other.rigidBodyObject.name==="Player"){
+                      console.log("나가는 문과 캐릭터와 충돌 발생",other.rigidBodyObject.name);
+                      setIsInside(false);
+                  }}}
+            >
+                <mesh position={[0, 59, 500]}>
+                    <boxGeometry args={[50, 100, 10]} />
+                    <meshBasicMaterial color="blue"/>
+                </mesh>
+            </RigidBody>
+            )}
+            {isInside&&(
+            <Text
+                    color="blue" // 텍스트 색상
+                    fontSize={10} // 텍스트 크기
+                    letterSpacing={0.02} // 글자 간격
+                    textAlign={'center'} // 텍스트 정렬
+                    anchorX="center" // X축 기준 중앙 정렬
+                    anchorY="middle" // Y축 기준 중앙 정렬
+                    position={[0, 130,490]} // 텍스트 위치
+                >
+                    Go Outside
+                </Text>
+            )}
+            {isInside&&(
+               <mesh
+                    ref={arrowRef}
+                    position={[0, 118, 490]} // 화살표 초기 위치
+                    rotation={[Math.PI,0,0]}
+                >
+                    <coneGeometry args={[3, 5, 15]}/>
+                    <meshStandardMaterial color="blue" /> 
+                </mesh>
+            )}
+            {isInside&&(
             <RigidBody type="fixed">
                 <Html 
                     className="monitorScreen" 
@@ -107,6 +165,8 @@ function Element3D(){
                     />
                 </Html>
             </RigidBody>
+            )}
+
             {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
             {/* <primitive
                 object={office_objects.scene} 
@@ -129,6 +189,7 @@ function Element3D(){
                 scale={1.1}
                 position={[100,0,63]}
              />  */}
+            {isInside&&(
             <RigidBody 
                 type="fixed"
                 scale={1.8}
@@ -140,6 +201,7 @@ function Element3D(){
                     onClick={handleMonitorClick} // 이벤트 핸들러 수정
                 />
             </RigidBody>
+            )}
             {/* <RigidBody type="fixed" 
                 scale={1.1}
                 position={[-70,0,63]}
@@ -149,22 +211,23 @@ function Element3D(){
                     object={office.scene}
                 />
             </RigidBody> */}
-
+            {isInside&&(
             <RigidBody colliders={false} type="fixed" name="void">
-                <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                    <planeGeometry args={[1000, 1000]} />
+                <mesh position={[0, 20, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                    <planeGeometry args={[2000, 2000]} />
                     <meshBasicMaterial color="#e3daf7" />
                 </mesh>
-                <CuboidCollider position={[0, 0, 0]} args={[1000, 0, 1000]} />
+                <CuboidCollider position={[0, 20, 0]} args={[1000, 1, 1000]} />
             </RigidBody>
-
-            <mesh onClick={handleNoticeBoardClick} position={[-260, 150, -200]}>
-                <boxGeometry args={[10, 10, 10]} />
-                <meshStandardMaterial color={'orange'} />
-            </mesh>
+            )} 
             <NPC controlsRef={controlsRef}/>
             <Player controlsRef={controlsRef}/>
+            // {isInside&&(
             <PrintCard controlsRef={controlsRef}/>
+            )} 
+            {isInside&&(
+            <Library controlsRef={controlsRef}/>
+            )}
         </>
     );
 }

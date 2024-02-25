@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useThree,useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei';
+import { useGLTF, useAnimations, useKeyboardControls} from '@react-three/drei';
 import * as THREE from 'three';
 import useCameraStore from '../store/cameraStore';
 // import useInput from "../hooks/useInput"
@@ -9,8 +9,8 @@ import usePlayerStore from  "../store/playerStore"
 import { RigidBody,CapsuleCollider } from '@react-three/rapier';
 import {Controls} from '../App'
 
-const MOVEMENT_SPEED = 500000;
-const MAX_VEL = 1000000;
+const MOVEMENT_SPEED = 200000;
+const MAX_VEL = 100000;
 
 const Player=({controlsRef})=>{
     const { isFocused, clearFocus } = useCameraStore();
@@ -24,9 +24,7 @@ const Player=({controlsRef})=>{
     const leftPressed = useKeyboardControls((state) => state[Controls.left]);
     const rightPressed = useKeyboardControls((state) => state[Controls.right]);
     const backPressed = useKeyboardControls((state) => state[Controls.back]);
-    const forwardPressed = useKeyboardControls(
-        (state) => state[Controls.forward]
-    );
+    const forwardPressed = useKeyboardControls((state) => state[Controls.forward]);
 
     // 모델과 애니메이션 로드 상태를 추적
     const [isLoaded, setIsLoaded] = useState(false);
@@ -175,7 +173,8 @@ const Player=({controlsRef})=>{
             >
                 <CapsuleCollider 
                     args={[20,30]} 
-                    position={[0,40,180]}
+                    position={[0,56,1600]}
+                    // position={[0,56,450]} //내부 테스트용
                     onCollisionEnter={(other)=>{
                         if(other.rigidBodyObject.name!=="void"){
                             console.log("충돌 발생",other.rigidBodyObject.name);
@@ -193,7 +192,8 @@ const Player=({controlsRef})=>{
                     object={scene}
                     ref={playerRef}
                     scale={33}
-                    position={[0,-5,180]}
+                    position={[0,15,1600]}
+                    // position={[0,15,450]} //내부 테스트용
                     rotation={[0,180*Math.PI/180,0]}
                 />
             </RigidBody>

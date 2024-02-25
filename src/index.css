@@ -1,11 +1,11 @@
 .speech-bubble {
   /* background-color: red; */
   display: flex;
-  margin-top: -30rem;
   justify-content: center;
   align-items: center;
-  width: 220rem; 
-  height: 100rem; 
+  margin-top: 1rem;
+  width: 280rem; 
+  height: 170rem; 
   overflow: hidden; /* 내용이 넘칠 경우 숨깁니다. */
 }
 
@@ -19,38 +19,75 @@
 
 
 .print-canvas {
+  display: flex;
   background: rgba(255, 255, 255, 0.7);
   width:100vw;
   height:100vh;
   border-radius: 2rem;
-  display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .cute-card {
   position: relative;
-  width: 60vw;
-  height: 40vw; 
-  font-size: 2rem;
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  width: 50vw;
+  height: 35vw; 
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255);
+  border-radius: 1rem;
+  padding: 1.5rem 2rem 0.5rem 2rem;
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr); /* 3등분한 컬럼 */
+  grid-column-gap:0.5rem;
+  /* grid-row-gap:1rem; */
+  grid-template-areas: 
+    "school-logo . ."
+    "name name id-picture"
+    "email email id-picture"
+    "school school id-picture"
+    "MBTI MBTI id-picture"
+    "IG IG kim-logo";
   cursor: pointer; /*클릭시 qr 출력 위함*/
+  overflow: hidden; /* 이 속성이 경계를 넘어서는 자식 요소들을 숨감 */
 }
+
+.school-logo{grid-area: school-logo;}
+.name { grid-area: name; }
+.email { grid-area: email; }
+.school { grid-area: school; }
+.MBTI { grid-area: MBTI; }
+.IG { grid-area: IG; }
+.id-picture{grid-area: id-picture;}
+.kim-logo{grid-area: kim-logo;}
+
+.school-logo img {
+  width: 40%; /* 부모 요소인 .school-logo에 맞게 조정 */
+  height: auto; /* 이미지의 비율을 유지하면서 너비에 맞춤 */
+  object-fit: cover; /* 이미지를 부모 요소에 맞추되, 비율 유지 */
+  margin-bottom: 1rem;
+}
+.id-picture img {
+  width: 100%; /* 부모 요소인 .school-logo에 맞게 조정 */
+  height: 98%; /* 이미지의 비율을 유지하면서 너비에 맞춤 */
+  object-fit: cover; /* 이미지를 부모 요소에 맞추되, 비율 유지 */
+}
+.kim-logo img {
+  margin-left: 6.8rem;
+  margin-top: 0.5rem;
+  width: 50%; /* 부모 요소인 .school-logo에 맞게 조정 */
+  height: 50%; /* 이미지의 비율을 유지하면서 너비에 맞춤 */
+}
+
 .overlay {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
   width: 100%;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 219, 112, 1) 45%, rgba(132, 50, 255, 1) 50%, transparent 54%);
-  filter: brightness(1.1) opacity(1);
-  mix-blend-mode: color-dodge;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 219, 112, 1) 40%, rgba(132, 50, 255, 1) 50%, transparent 54%);
+  filter: blur(30px) brightness(1.1) opacity(0.7);
+  mix-blend-mode: screen;
   background-size: 150% 150%;
   background-position: 100%;
   transition: all 0.1s;
@@ -58,7 +95,7 @@
 
 .qr-description{
   position: absolute;
-  top: 45rem;
+  top: 46rem;
   padding: 0.5rem;
   font-size: 1.5rem; 
   background-color: bisque;
@@ -78,3 +115,42 @@
   background: rgba(255, 255, 255);
   border-radius: 1rem;
 }
+
+.gallery-canvas{
+  background: rgba(255, 255, 255, 0.7);
+  width:100vw;
+  height:100vh;
+  border-radius: 2rem;
+}
+
+.gallery-description{
+  top: 3.5rem;
+  left: 3rem;
+  position: absolute;
+  padding: 0.5rem;
+  font-size: 1.5rem; 
+  background-color: bisque;
+}
+
+
+
+
+/* .card-test{
+  position: relative;
+  width: 50vw;
+  height: 35vw; 
+  border-radius: 1rem;
+  cursor: pointer; 
+  overflow: hidden;
+}
+.card-test img {
+  width: 100%; 
+  height: 100%; 
+}
+.card-test .name {
+  position: absolute;
+  bottom: 212px; 
+  left: 18%; 
+  color: darkblue;
+  text-align: center; 
+} */
