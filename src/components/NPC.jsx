@@ -91,8 +91,8 @@ const NPC = ({controlsRef}) => {
     setShowSpeechBubble(true); // 말풍선 표시
     setIsVisible(false); // 플레이어를 숨김
 
-    const npcPosition = { x: 130, y: 70, z: 1350 }; 
-    const npcTarget = { x: 130, y: 70, z: 1350 };
+    const npcPosition = { x: 130, y: 100, z: 1350 }; 
+    const npcTarget = { x: 130, y: 0, z: 1350 };
 
     setFocus(npcPosition); // 포커스 대상 좌표 설정
 

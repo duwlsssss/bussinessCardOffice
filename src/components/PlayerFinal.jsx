@@ -9,7 +9,7 @@ import usePlayerStore from  "../store/playerStore"
 import { RigidBody,CapsuleCollider } from '@react-three/rapier';
 import {Controls} from '../App'
 
-const MOVEMENT_SPEED = 200000;
+const MOVEMENT_SPEED = 100000;
 const MAX_VEL = 100000;
 
 const Player=({controlsRef})=>{
@@ -26,8 +26,6 @@ const Player=({controlsRef})=>{
     const backPressed = useKeyboardControls((state) => state[Controls.back]);
     const forwardPressed = useKeyboardControls((state) => state[Controls.forward]);
 
-    // 모델과 애니메이션 로드 상태를 추적
-    const [isLoaded, setIsLoaded] = useState(false);
     //충돌 상태 
     const [isCollided, setIsCollided] = useState(false);
 
@@ -75,82 +73,82 @@ const Player=({controlsRef})=>{
         }
     },[forwardPressed,backPressed,leftPressed,rightPressed,actions])
 
-    useFrame((state,delta)=>{
-        if(!isFocused){
-            // 충돌 상태이고, 이동 키 중 하나라도 눌렸다면
-            if (isCollided && (forwardPressed || backPressed || leftPressed || rightPressed)) {
-                setIsCollided(false);
-            }
-            else if(isCollided){
-                // 리니어 및 각속도를 0으로 설정하여 이동과 회전을 멈춤
-                rigidbody.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
-                rigidbody.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
-            }
+    // useFrame((state,delta)=>{
+    //     if(!isFocused){
+    //         // 충돌 상태이고, 이동 키 중 하나라도 눌렸다면
+    //         if (isCollided && (forwardPressed || backPressed || leftPressed || rightPressed)) {
+    //             setIsCollided(false);
+    //         }
+    //         else if(isCollided){
+    //             // 리니어 및 각속도를 0으로 설정하여 이동과 회전을 멈춤
+    //             rigidbody.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    //             rigidbody.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    //         }
             
-            //충돌 상태가 아니면
-            else if(!isCollided){
-                const impulse = { x: 0, y: 0, z: 0 };
-                const isMoving = leftPressed || rightPressed || backPressed || forwardPressed;
-                const linvel = rigidbody.current.linvel();
+    //         //충돌 상태가 아니면
+    //         else if(!isCollided){
+    //             const impulse = { x: 0, y: 0, z: 0 };
+    //             const isMoving = leftPressed || rightPressed || backPressed || forwardPressed;
+    //             const linvel = rigidbody.current.linvel();
 
-                let changeRotation = false;
-                if (rightPressed && linvel.x < MAX_VEL) {
-                impulse.x += MOVEMENT_SPEED;
-                changeRotation = true;
-                }
-                if (leftPressed && linvel.x > -MAX_VEL) {
-                impulse.x -= MOVEMENT_SPEED;
-                changeRotation = true;
-                }
-                if (backPressed && linvel.z < MAX_VEL) {
-                impulse.z += MOVEMENT_SPEED;
-                changeRotation = true;
-                }
-                if (forwardPressed && linvel.z > -MAX_VEL) {
-                impulse.z -= MOVEMENT_SPEED;
-                changeRotation = true;
-                }
+    //             let changeRotation = false;
+    //             if (rightPressed && linvel.x < MAX_VEL) {
+    //             impulse.x += MOVEMENT_SPEED;
+    //             changeRotation = true;
+    //             }
+    //             if (leftPressed && linvel.x > -MAX_VEL) {
+    //             impulse.x -= MOVEMENT_SPEED;
+    //             changeRotation = true;
+    //             }
+    //             if (backPressed && linvel.z < MAX_VEL) {
+    //             impulse.z += MOVEMENT_SPEED;
+    //             changeRotation = true;
+    //             }
+    //             if (forwardPressed && linvel.z > -MAX_VEL) {
+    //             impulse.z -= MOVEMENT_SPEED;
+    //             changeRotation = true;
+    //             }
 
-                // console.log("Before impulse:", rigidbody.current.linvel());
+    //             // console.log("Before impulse:", rigidbody.current.linvel());
 
-                // 키를 누르고 있지 않으면 속도를 0으로 설정
-                if (!isMoving) {
-                    rigidbody.current.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
-                } else {
-                    rigidbody.current.applyImpulse(impulse, true);
-                }
-                // console.log("After impulse:", rigidbody.current.linvel());
+    //             // 키를 누르고 있지 않으면 속도를 0으로 설정
+    //             if (!isMoving) {
+    //                 rigidbody.current.setLinvel({ x: 0, y: linvel.y, z: 0 }, true);
+    //             } else {
+    //                 rigidbody.current.applyImpulse(impulse, true);
+    //             }
+    //             // console.log("After impulse:", rigidbody.current.linvel());
 
-                if (changeRotation) {
-                const angle = Math.atan2(linvel.x, linvel.z);
-                playerRef.current.rotation.y = angle;
-                }
+    //             if (changeRotation) {
+    //             const angle = Math.atan2(linvel.x, linvel.z);
+    //             playerRef.current.rotation.y = angle;
+    //             }
 
-            }
-            // CAMERA FOLLOW
-            const characterWorldPosition = playerRef.current.getWorldPosition(new THREE.Vector3());
+    //         }
+    //         // CAMERA FOLLOW
+    //         const characterWorldPosition = playerRef.current.getWorldPosition(new THREE.Vector3());
 
-            setPlayerPosition(characterWorldPosition.x,characterWorldPosition.y,characterWorldPosition.z);
+    //         setPlayerPosition(characterWorldPosition.x,characterWorldPosition.y,characterWorldPosition.z);
 
-            const targetCameraPosition = new THREE.Vector3(
-            characterWorldPosition.x,
-            characterWorldPosition.y + 130,
-            characterWorldPosition.z + 100
-            );
+    //         const targetCameraPosition = new THREE.Vector3(
+    //         characterWorldPosition.x,
+    //         characterWorldPosition.y + 130,
+    //         characterWorldPosition.z + 100
+    //         );
 
-            state.camera.position.lerp(targetCameraPosition, delta * 20);
+    //         state.camera.position.lerp(targetCameraPosition, delta * 20);
 
-            // 카메라 시선(Target) 업데이트
-            if (controlsRef && controlsRef.current) {
-                controlsRef.current.target.set(
-                characterWorldPosition.x,
-                characterWorldPosition.y + 65,
-                characterWorldPosition.z
-                );
-                controlsRef.current.update(); // 필요한 경우 OrbitControls 업데이트
-            }                              
-        }
-    })
+    //         // 카메라 시선(Target) 업데이트
+    //         if (controlsRef && controlsRef.current) {
+    //             controlsRef.current.target.set(
+    //             characterWorldPosition.x,
+    //             characterWorldPosition.y + 65,
+    //             characterWorldPosition.z
+    //             );
+    //             controlsRef.current.update(); // 필요한 경우 OrbitControls 업데이트
+    //         }                              
+    //     }
+    // })
 
     // 캐릭터 크기
     // useEffect(() => {
@@ -203,3 +201,5 @@ const Player=({controlsRef})=>{
 
 
 export default Player;
+
+

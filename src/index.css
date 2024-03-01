@@ -105,6 +105,50 @@
   position: absolute;
 }
 
+.popup-overlay {
+  position: fixed; /* 전체 화면을 커버 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  backdrop-filter: blur(4px) grayscale(90%);
+  z-index: 999; /* 팝업 뒤에 위치하도록 z-index 설정 */
+}
+.save-popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000; /* 다른 요소들보다 높은 값으로 설정 */
+  background-color: rgb(255,255,255); /* 배경색 */
+  font-size: 2rem;
+  padding: 1rem; /* 패딩 */
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center; 
+  gap: 1rem; 
+}
+
+.yes-save{
+  padding: 0.5rem 1rem; 
+  border-radius: 0.5rem;
+  cursor: pointer; 
+  font-size: 1rem; 
+}
+.no-save{
+  padding: 0.5rem 1rem; 
+  border-radius: 0.5rem;
+  cursor: pointer; 
+  font-size: 1rem;
+}
+
 .back {
   position: absolute;
   top: 3.5rem;

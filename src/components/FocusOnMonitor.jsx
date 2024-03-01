@@ -15,8 +15,8 @@ const FocusOnMonitor = (controlsRef) => {
 
   const handleMonitorClick = () => {
     console.log("monitor click")
-    setIsVisible(false); // 플레이어를 숨김
     setFocus({ x: -1.6, y: 106, z: 50 }); // 포커스 대상의 좌표
+    setIsVisible(false); // 플레이어를 숨김
     if (!beforeCamera && controlsRef.current) {
       setBeforeCamera({
         position: camera.position.clone(),

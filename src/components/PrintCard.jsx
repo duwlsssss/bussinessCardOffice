@@ -5,6 +5,8 @@ import * as THREE from 'three'; // THREE 모듈을 임포트
 import { gsap } from 'gsap';
 import useCameraStore from '../store/cameraStore';
 import usePlayerStore from "../store/playerStore";
+import html2canvas from 'html2canvas';
+import useCardImgStore from "../store/cardImgStore";
 
 const PrintCard = ({controlsRef}) => {
     const { camera } = useThree();
@@ -13,6 +15,7 @@ const PrintCard = ({controlsRef}) => {
     const [transform, setTransform] = useState(null);
     const [overlayStyle, setOverlayStyle] = useState({}); //overlay 스타일 변화
     const [showQR, setShowQR] = useState(false); // QR 코드 표시 여부
+    const [showSavePopup, setShowSavePopup] = useState(false); // 팝업 표시 여부
     const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
     
     // 자식 창에서 보낸 데이터 수신
@@ -61,6 +64,10 @@ const PrintCard = ({controlsRef}) => {
             ease: "power3.inOut",
             onUpdate: () => { controlsRef.current.update(); },
             onComplete:()=>{ 
+              // 카드로 카메라 이동 1초 후에 팝업 표시
+              setTimeout(() => {
+                setShowSavePopup(true);
+              }, 1000);
             } 
           });
         }
@@ -89,10 +96,34 @@ const PrintCard = ({controlsRef}) => {
     // QR 코드 표시 여부 바꿈
     const handleQRClick = (e) => {
       e.stopPropagation();
-      setShowQR(!showQR); 
+      setShowQR(!showQR);
     };
 
-    const handleBackClick=()=>{
+    // 팝업 표시 여부 바꿈
+    const handleYesClick = (e) => {
+      e.stopPropagation();
+      saveCardHandler();
+      setShowSavePopup(false);
+    };
+    //카드 이미지로 저장
+    const saveCardHandler = async() => {
+      const cardElement = document.querySelector('.cute-card'); 
+      if(cardElement){
+        const canvas = await html2canvas(cardElement);
+        const image = canvas.toDataURL('image/png');
+        useCardImgStore.getState().addImage(image); //Base64 인코딩된 문자열 저장
+        console.log("saved cardImg");
+      }else{
+        console.log("'.cute-card' was not found");
+      }
+    };
+    const handleNoClick = (e) => {
+      e.stopPropagation();
+      setShowSavePopup(false);
+    };
+
+    const handleBackClick=(e)=>{
+      e.stopPropagation()
       setIsVisible(true); // 플레이어를 표시
       setReceivedData(null);
       const playerPos = usePlayerStore.getState().playerPosition;
@@ -115,7 +146,7 @@ const PrintCard = ({controlsRef}) => {
             clearFocus();
           },
         });
-    }}            
+    }}           
 
 
     return (
@@ -160,6 +191,18 @@ const PrintCard = ({controlsRef}) => {
                   <div className="QR" onClick={handleQRClick}>
                       <img src="/images/qrcodeTest.png" alt="QR Code" />
                   </div>
+              )}
+              {showSavePopup && (
+                <>
+                  <div className="popup-overlay"/>
+                  <div className="save-popup">
+                    <p>갤러리에 명함을 전시하시겠습니까?</p>
+                    <div className="buttons-container">
+                      <button className="yes-save" onClick={handleYesClick}>OK</button>
+                      <button className="no-save" onClick={handleNoClick}>Cancel</button>
+                    </div>
+                  </div>
+                </>
               )}
               {!showQR && (
                   <div className="qr-description">Click business card to show QR</div>

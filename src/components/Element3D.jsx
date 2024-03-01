@@ -10,17 +10,19 @@ import FocusOnMonitor from "./FocusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import PrintCard from "./PrintCard";
-import Library from "./Gallery";
-import { initSplineTexture } from "three-stdlib";
+import Gallery from "./Gallery";
+import { TexturePass, initSplineTexture } from "three-stdlib";
 
 function Element3D(){
     const [isInside, setIsInside]=useState(false);
+    // const [isInside, setIsInside]=useState(true); //내부 테스트용
     const arrowRef = useRef();
 
     // const office_objects = useGLTF('./models/office_objects.glb')
     // const floor = useGLTF('./models/wall_floor.glb')
     const monitor = useGLTF('/models/monitor.glb')
     const office_outside = useGLTF('/models/office_outside.glb')
+    const tree = useGLTF('/models/tree.glb')
     // const office = useGLTF('/models/office.glb')
 
     //조명 헬퍼
@@ -28,6 +30,45 @@ function Element3D(){
     useHelper(directionalLightRef, DirectionalLightHelper,5, "red");
     const spotLightRef = useRef();
     useHelper(spotLightRef, SpotLightHelper,5, "red");
+
+    // const { camera } = useThree();
+    // //orbitControls 사용 여부
+    // const [enableOrbit, setEnableOrbit] = useState(true);
+
+    // //orbitcontrols 비활성화-활성화될때 target 저장하기 위함
+    // const [cameraState, setCameraState] = useState({
+    //     position: camera.position.clone(),
+    //     target: new THREE.Vector3()
+    // });
+
+    // useEffect(() => {
+    // if (enableOrbit) {
+    //     // OrbitControls를 활성화할 때, 카메라 상태를 복원
+    //     camera.position.copy(cameraState.position);
+    //     controlsRef.current.target.copy(cameraState.target);
+    //     controlsRef.current.update();
+    // } else {
+    //     // OrbitControls를 비활성화할 때, 현재 카메라 상태 저장
+    //     setCameraState({
+    //     position: camera.position.clone(),
+    //     target: controlsRef.current.target.clone()
+    //     });
+    // }
+    // }, [enableOrbit, camera, controlsRef]);
+
+
+
+
+    // 갤러리 모드 진입 시 OrbitControls 비활성화
+    const handleEnterGalleryMode = () => {
+        setEnableOrbit(false);
+        console.log("!enableOrbit")
+    };
+    // 갤러리 모드 종료 시 OrbitControls 활성화
+    const handleExitGalleryMode = () => {
+        setEnableOrbit(true);
+        console.log("enableOrbit")
+    };
 
     // const three=useThree();
     // console.log("three",three);//정보 출력 
@@ -40,7 +81,13 @@ function Element3D(){
                 child.receiveShadow = true;
             }
         });
-    }, [office_outside]);
+        office_outside.scene.traverse(child => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
+    }, [office_outside,tree]);
 
     //화살표 에니메이션
     useFrame((state, delta) => {
@@ -54,8 +101,12 @@ function Element3D(){
     const { handleMonitorClick } = FocusOnMonitor(controlsRef);
     // const { handleNoticeBoardClick } = FocusOnNoticeBoard(controlsRef);
 
+
+     
+
     return(
         <>
+            {/* {enableOrbit && <OrbitControls ref={controlsRef} />} */}
             <OrbitControls ref={controlsRef} />
             <axesHelper args={[500, 500, 500]} /> {/*월드좌표축*/}
             <Stats/>
@@ -172,7 +223,8 @@ function Element3D(){
                 object={office_objects.scene} 
                 scale={1.1}
                 position={[100,0,63]}
-            /> 
+            />  */}
+            {/*
             <primitive
                 object={floor.scene} 
                 scale={1.1}
@@ -222,12 +274,19 @@ function Element3D(){
             )} 
             <NPC controlsRef={controlsRef}/>
             <Player controlsRef={controlsRef}/>
-            // {isInside&&(
+            {isInside&&(
             <PrintCard controlsRef={controlsRef}/>
             )} 
             {isInside&&(
-            <Library controlsRef={controlsRef}/>
+            <Gallery controlsRef={controlsRef}/>
             )}
+            {/* {isInside&&(
+            <primitive
+                object={tree.scene}
+                scale={5}
+                position={[0,30,300]}
+            />
+            )} */}
         </>
     );
 }
