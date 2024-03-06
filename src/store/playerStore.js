@@ -5,6 +5,8 @@ const usePlayerStore = create(set => ({
   setPlayerPosition: (x, y, z) => set(() => ({ playerPosition: { x, y, z } })),
   isVisible: true, // 플레이어의 초기 가시성 상태
   setIsVisible: (isVisible) => set(() => ({ isVisible })),
+  isCollided: false,
+  setIsCollided: (isCollided) => set(() => ({ isCollided })),
 }));
 
 export default usePlayerStore;

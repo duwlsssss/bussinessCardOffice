@@ -10,8 +10,8 @@ const FocusOnMonitor = (controlsRef) => {
   const { setFocus,clearFocus } = useCameraStore();
   const [beforeCamera, setBeforeCamera] = useState(null);
 
-  const monitorPosition = { x: -1.6, y: 106, z: 50 };
-  const monitorTarget = { x: -1.6, y: 106, z: 23 };
+  const monitorPosition = { x: -16.6, y: 116.5, z: 230 };
+  const monitorTarget = { x: -16.6, y: 116.5, z: 200 };
 
   const handleMonitorClick = () => {
     console.log("monitor click")

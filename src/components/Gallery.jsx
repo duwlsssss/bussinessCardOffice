@@ -15,14 +15,14 @@ const Gallery = ({ controlsRef }) => {
     const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
     const images = useCardImgStore((state) => state.images); // Zustand 스토어에서 이미지 배열 가져오기
 
-    const nbPosition = { x: -270, y: 140, z: -100 };
-    const nbTarget = { x: -270, y: 140, z: -180 };
+    const nbPosition = { x: -270, y: 140, z: 20 };
+    const nbTarget = { x: -270, y: 140, z: -10 };
 
     const handleNoticeBoardClick = () => {
       console.log("nbClick")
       setIsVisible(false); // 플레이어를 숨김
       setShowCube(false); //큐브 숨김
-      setFocus({ x: -270, y: 140, z: -100 }); // 포커스 대상의 좌표
+      setFocus({ x: -270, y: 140, z: 20 }); // 포커스 대상의 좌표
         gsap.to(camera.position, {
           x: nbPosition.x,
           y: nbPosition.y,
@@ -72,7 +72,7 @@ const Gallery = ({ controlsRef }) => {
     return (
       <>
       {showCube ? (
-        <mesh onClick={handleNoticeBoardClick} position={[-260, 150, -200]}>
+        <mesh onClick={handleNoticeBoardClick} position={[-260, 150, 0]}>
           <boxGeometry args={[10, 10, 10]} />
           <meshStandardMaterial color={'orange'} />
         </mesh>
@@ -85,7 +85,7 @@ const Gallery = ({ controlsRef }) => {
               ))}
             </Scroll>
           </ScrollControls> */}
-          <Html transform occlude position={[-270, 140, -115]}>
+          <Html transform occlude position={[-270, 140, 5]}>
             <div className='gallery-canvas'>
               <div className="back" onClick={handleBackClick}>❌</div>
               <div className="gallery-description">Scroll to view Gallery</div>

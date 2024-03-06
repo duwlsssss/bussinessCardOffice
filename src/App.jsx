@@ -1,11 +1,13 @@
 import {Canvas} from '@react-three/fiber'
 import React, { Suspense, useMemo, useState, lazy } from 'react'
 import { Physics } from '@react-three/rapier'
-import { KeyboardControls} from '@react-three/drei'
+import { Gltf, KeyboardControls} from '@react-three/drei'
 import Loader from './components/Loader';
 import * as THREE from 'three';
 import "./App.css"
 import Element3D from "./components/Element3D"
+
+// const LazyComponent = lazy(() => import('./components/Element3D'));
 
 export const Controls = {
   forward: "forward",
@@ -13,8 +15,6 @@ export const Controls = {
   left: "left",
   right: "right",
 };
-
-// const LazyComponent = lazy(() => import('./components/Element3D'));
 
 function App() {
 
@@ -27,7 +27,6 @@ function App() {
     ], []
   );
 
-  
   return (
       <KeyboardControls map={map}>
         <Canvas
@@ -40,12 +39,13 @@ function App() {
           }}
         >
           <Suspense fallback={<Loader/>}>
-            <Physics debug> 
+            <Physics debug timeStep={"vary"}> 
               <Element3D/>
             </Physics>
           </Suspense>
         </Canvas>
       </KeyboardControls>
+
   );
 }
 

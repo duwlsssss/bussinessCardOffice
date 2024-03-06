@@ -5,24 +5,25 @@ import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
 import NPC from "./NPC";
-import Player from "./PlayerFinal";
+// import Player from "./PlayerFinal";
+import Player from "./PlayerFinal copy 4";
+// import Player from "./PlayerFinal copy 5";
 import FocusOnMonitor from "./FocusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import PrintCard from "./PrintCard";
 import Gallery from "./Gallery";
-import { TexturePass, initSplineTexture } from "three-stdlib";
 
 function Element3D(){
+
     const [isInside, setIsInside]=useState(false);
     // const [isInside, setIsInside]=useState(true); //내부 테스트용
     const arrowRef = useRef();
 
-    // const office_objects = useGLTF('./models/office_objects.glb')
+    const office_objects = useGLTF('./models/office_modeling.glb')
     // const floor = useGLTF('./models/wall_floor.glb')
     const monitor = useGLTF('/models/monitor.glb')
-    const office_outside = useGLTF('/models/office_outside.glb')
-    const tree = useGLTF('/models/tree.glb')
+    const office_outside = useGLTF('/models/external_modeling.glb')
     // const office = useGLTF('/models/office.glb')
 
     //조명 헬퍼
@@ -59,23 +60,23 @@ function Element3D(){
 
 
 
-    // 갤러리 모드 진입 시 OrbitControls 비활성화
-    const handleEnterGalleryMode = () => {
-        setEnableOrbit(false);
-        console.log("!enableOrbit")
-    };
-    // 갤러리 모드 종료 시 OrbitControls 활성화
-    const handleExitGalleryMode = () => {
-        setEnableOrbit(true);
-        console.log("enableOrbit")
-    };
+    // // 갤러리 모드 진입 시 OrbitControls 비활성화
+    // const handleEnterGalleryMode = () => {
+    //     setEnableOrbit(false);
+    //     console.log("!enableOrbit")
+    // };
+    // // 갤러리 모드 종료 시 OrbitControls 활성화
+    // const handleExitGalleryMode = () => {
+    //     setEnableOrbit(true);
+    //     console.log("enableOrbit")
+    // };
 
     // const three=useThree();
     // console.log("three",three);//정보 출력 
 
     //그림자 넣기
     useEffect(() => {
-        office_outside.scene.traverse(child => {
+        office_objects.scene.traverse(child => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
@@ -87,7 +88,7 @@ function Element3D(){
                 child.receiveShadow = true;
             }
         });
-    }, [office_outside,tree]);
+    }, [office_objects,office_outside]);
 
     //화살표 에니메이션
     useFrame((state, delta) => {
@@ -96,13 +97,11 @@ function Element3D(){
         }
     });
 
-
     const controlsRef = useRef();
     const { handleMonitorClick } = FocusOnMonitor(controlsRef);
     // const { handleNoticeBoardClick } = FocusOnNoticeBoard(controlsRef);
 
 
-     
 
     return(
         <>
@@ -114,33 +113,32 @@ function Element3D(){
             <directionalLight
                 ref={directionalLightRef}
                 intensity={1}
-                position={[-100,400,0]}
+                position={[0,300,-200]}
                 color={"#fdfbfb"}
-                castShadow
                 shadow-camera-left={-500}
                 shadow-camera-right={500}
                 shadow-camera-top={500}
                 shadow-camera-bottom={-500}
-                shadow-camera-near={10}
+                shadow-camera-near={1}
                 shadow-camera-far={1000}
-                shadow-mapSize-width={10000}
-                shadow-mapSize-height={10000}
-            />             
-            {/* <spotLight
+                shadow-mapSize-width={1024}
+                shadow-mapSize-height={1024}
+            />     
+            {isInside&&(        
+            <spotLight
                 ref={spotLightRef}
-                position={[-100,115,162]} // 램프의 위치에 맞게 조정
-                target-position={[-100,0,162]}
-                angle={40*Math.PI/180}
-                penumbra={0.1}
+                position={[-295,160,18]} // 램프의 위치에 맞게 조정
+                target-position={[-298,0,18]}
+                angle={30*Math.PI/180}
+                // penumbra={0.1}
                 color={"gold"}
-                intensity={45000}
-                // castShadow
-            /> */}
-
+                intensity={10000}
+            />)}
             {!isInside&&(
             <RigidBody
                 type="fixed"
                 colliders="trimesh"
+                name="out_floor"
                 scale={10}
                 position={[30,-58,300]}
                 rotation={[0, 90 * Math.PI / 180, 0]} 
@@ -159,9 +157,11 @@ function Element3D(){
                       setIsInside(true);
                   }}}
             >
-                <mesh position={[0, 59, 410]}>
-                    <boxGeometry args={[50, 100, 10]} />
-                    <meshBasicMaterial color="red"/>
+                <mesh position={[-15, 70, 430]}>
+                    <boxGeometry args={[100, 100, 10]} />
+                    <meshStandardMaterial color="red"
+                    transparent={true}
+                    opacity={0.1}/>
                 </mesh>
             </RigidBody>
             )}
@@ -172,11 +172,18 @@ function Element3D(){
                     if(other.rigidBodyObject.name==="Player"){
                       console.log("나가는 문과 캐릭터와 충돌 발생",other.rigidBodyObject.name);
                       setIsInside(false);
-                  }}}
+                }}}
+                exitCollisionEnter={(other)=>{
+                if(other.rigidBodyObject.name==="Player"){
+                    console.log("나가는 문과 캐릭터와 충돌 해제",other.rigidBodyObject.name);
+                    
+                }}}
             >
-                <mesh position={[0, 59, 500]}>
-                    <boxGeometry args={[50, 100, 10]} />
-                    <meshBasicMaterial color="blue"/>
+                <mesh position={[-15, 72, 530]}>
+                    <boxGeometry args={[100, 100, 10]} />
+                    <meshStandardMaterial color="blue"
+                    transparent={true}
+                    opacity={0.1}/>
                 </mesh>
             </RigidBody>
             )}
@@ -188,7 +195,7 @@ function Element3D(){
                     textAlign={'center'} // 텍스트 정렬
                     anchorX="center" // X축 기준 중앙 정렬
                     anchorY="middle" // Y축 기준 중앙 정렬
-                    position={[0, 130,490]} // 텍스트 위치
+                    position={[-13, 150, 530]} // 텍스트 위치
                 >
                     Go Outside
                 </Text>
@@ -196,7 +203,7 @@ function Element3D(){
             {isInside&&(
                <mesh
                     ref={arrowRef}
-                    position={[0, 118, 490]} // 화살표 초기 위치
+                    position={[-15, 135, 530]} // 화살표 초기 위치
                     rotation={[Math.PI,0,0]}
                 >
                     <coneGeometry args={[3, 5, 15]}/>
@@ -204,48 +211,42 @@ function Element3D(){
                 </mesh>
             )}
             {isInside&&(
-            <RigidBody type="fixed">
                 <Html 
                     className="monitorScreen" 
                     transform
                     occlude="blending"
-                    position={[-1.6,106.5,24]}
+                    position={[-16.6,116.5,204]}
                 >
                     <iframe src="https://kimmyungsa.netlify.app"
                         style={{ width: '1600px', height: '1200px' }}
                     />
                 </Html>
-            </RigidBody>
             )}
 
             {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
-            {/* <primitive
-                object={office_objects.scene} 
-                scale={1.1}
-                position={[100,0,63]}
-            />  */}
-            {/*
-            <primitive
+            {/*<primitive
                 object={floor.scene} 
                 scale={1.1}
                 position={[100,0,63]}
              />  */}
             {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
-            {/* <primitive
-                object={office_objects.scene} 
-                scale={1.1}
-                position={[100,0,63]}
-            /> 
-            <primitive
-                object={floor.scene} 
-                scale={1.1}
-                position={[100,0,63]}
-             />  */}
+            {isInside&&(<RigidBody 
+                type="fixed"
+                colliders={false}
+                // colliders="trimesh"
+                scale={1}
+                rotation={[0, -90 * Math.PI / 180, 0]} 
+                position={[-80,15,240]}
+            >
+                <primitive
+                    object={office_objects.scene} 
+                /> 
+            </RigidBody>)}
             {isInside&&(
             <RigidBody 
                 type="fixed"
                 scale={1.8}
-                position={[-110,-10,90]}
+                position={[-125,0,270]}
                 rotation={[0, -90 * Math.PI / 180, 0]} 
             >
                 <primitive
@@ -264,12 +265,12 @@ function Element3D(){
                 />
             </RigidBody> */}
             {isInside&&(
-            <RigidBody colliders={false} type="fixed" name="void">
-                <mesh position={[0, 20, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <RigidBody colliders={false} type="fixed" name="in_floor">
+                {/* <mesh position={[0, 25, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                     <planeGeometry args={[2000, 2000]} />
-                    <meshBasicMaterial color="#e3daf7" />
-                </mesh>
-                <CuboidCollider position={[0, 20, 0]} args={[1000, 1, 1000]} />
+                    <meshStandardMaterial color="#e3daf7" />
+                </mesh> */}
+                <CuboidCollider position={[0, 25, 0]} args={[1000, 1, 1000]} />
             </RigidBody>
             )} 
             <NPC controlsRef={controlsRef}/>
@@ -280,13 +281,6 @@ function Element3D(){
             {isInside&&(
             <Gallery controlsRef={controlsRef}/>
             )}
-            {/* {isInside&&(
-            <primitive
-                object={tree.scene}
-                scale={5}
-                position={[0,30,300]}
-            />
-            )} */}
         </>
     );
 }

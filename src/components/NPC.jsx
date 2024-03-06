@@ -18,16 +18,18 @@ const messages = [
 
 const NPC = ({controlsRef}) => {
   const npcRef = useRef();
-  const { scene, animations } = useGLTF("/models/standing_55.glb");
+  const { scene, animations } = useGLTF("/models/character_standing.glb");
   const { actions } = useAnimations(animations, npcRef);
   const { camera } = useThree();
   const [beforeCamera, setBeforeCamera] = useState(null);
   const { setFocus } = useCameraStore();
+  const { clearFocus } = useCameraStore();
   const [showSphere,setShowSphere]=useState(false);
   const [showSpeechBubble, setShowSpeechBubble] = useState(false); // 말풍선 표시 상태
   const [currentAnimation, setCurrentAnimation] = useState("standing_55");
   const playerPosition = usePlayerStore(state => state.playerPosition); // 플레이어 위치 추적
   const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
+  // const setIsCollided = usePlayerStore(state => state.setIsCollided); //플레이어 충돌
 
   // console.log("actions",actions); //에니메이션 종류 확인 
   // const texture = useLoader(TextureLoader, '/images/speechBubble.png');
@@ -90,9 +92,10 @@ const NPC = ({controlsRef}) => {
     setShowSphere(false); // Sphere 숨김
     setShowSpeechBubble(true); // 말풍선 표시
     setIsVisible(false); // 플레이어를 숨김
+    // setIsCollided(true);
 
-    const npcPosition = { x: 130, y: 100, z: 1350 }; 
-    const npcTarget = { x: 130, y: 0, z: 1350 };
+    const npcPosition = { x: 130, y: 110, z: 1350 }; 
+    const npcTarget = { x: 130, y: 90, z: 1200 };
 
     setFocus(npcPosition); // 포커스 대상 좌표 설정
 
@@ -126,6 +129,7 @@ const NPC = ({controlsRef}) => {
     setShowSpeechBubble(false); // 말풍선 숨김
     setShowSphere(true); // Sphere 다시 표시
     setIsVisible(true); // 플레이어를 다시 표시
+    // setIsCollided(false); // 충돌 상태를 해제하여 움직임을 재개할 수 있도록 설정
 
     if (beforeCamera && controlsRef && controlsRef.current) {
       // gsap 애니메이션을 사용하여 카메라와 타겟을 원래대로 복귀
@@ -161,7 +165,7 @@ const NPC = ({controlsRef}) => {
       colliders={false}
     >
       <CapsuleCollider 
-        args={[20,30]} 
+        args={[20,40]} 
         position={[130,45,1210]}
         //Player와 부딪혔을때 에니메이션
         onCollisionEnter={(other)=>{
@@ -199,7 +203,7 @@ const NPC = ({controlsRef}) => {
         </mesh>
       )}
       {showSpeechBubble && (
-        <Html position={[130, 140, 1220]} transform occlude>
+        <Html position={[130, 140, 1230]} transform occlude>
           <div className='speech-bubble'>
             <div className="speech-bubble-text">{message}</div>
           </div>
