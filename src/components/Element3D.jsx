@@ -92,11 +92,8 @@ function Element3D(){
         }
     });
 
-    const controlsRef = useRef();
-    const { handleMonitorClick } = FocusOnMonitor(controlsRef);
+    const { handleMonitorClick } = FocusOnMonitor();
     // const { handleNoticeBoardClick } = FocusOnNoticeBoard();
-
-
 
     return(
         <>
@@ -328,7 +325,7 @@ function Element3D(){
             </RigidBody>
             )}
             {/* <NPC/>  */}
-            <Player ref={controlsRef}/>
+            <Player/>
             {/* {isInside&&(
             <PrintCard/>
             )}  */}
