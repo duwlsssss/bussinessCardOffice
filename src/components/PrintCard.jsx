@@ -8,7 +8,7 @@ import usePlayerStore from "../store/playerStore";
 import html2canvas from 'html2canvas';
 import useCardImgStore from "../store/cardImgStore";
 
-const PrintCard = ({controlsRef}) => {
+const PrintCard = () => {
     const { camera } = useThree();
     const { setFocus,clearFocus } = useCameraStore();
     const [receivedData, setReceivedData] = useState(null);
@@ -42,8 +42,8 @@ const PrintCard = ({controlsRef}) => {
   
 
     //인쇄 누르고 카메라 설정
-    const cameraPosition = { x: -1.6, y: 106, z: 100 };
-    const cameraTarget = { x: -1.6, y: 106, z: 50 };
+    const cameraPosition = { x: -11.6, y: 120, z: 270 };
+    const cameraTarget = { x: -11.6, y: 120, z: 200 };
     useEffect(() => {
       if (receivedData) {
         console.log('새로 받은 데이터:', receivedData);
@@ -152,7 +152,7 @@ const PrintCard = ({controlsRef}) => {
     return (
       <>
         {receivedData && ( // receivedData가 있을 때만 아래의 내용을 렌더링
-          <Html transform occlude position={[-1.6, 106.5, 80]}>
+          <Html transform occlude position={[-11.6,120.5,250]}>
             <div className='print-canvas'>
               <div className="back" onClick={handleBackClick}>❌</div>
               {!showQR && (

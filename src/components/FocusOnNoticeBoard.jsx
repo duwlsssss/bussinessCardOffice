@@ -4,14 +4,14 @@ import { gsap } from 'gsap';
 import useCameraStore from '../store/cameraStore';
 import usePlayerStore from  "../store/playerStore";
 
-const FocusOnNoticeBoard = (controlsRef) => {
+const FocusOnNoticeBoard = () => {
   const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
   const { camera } = useThree();
   const { setFocus, clearFocus } = useCameraStore();
   const [beforeCamera, setBeforeCamera] = useState(null);
 
-  const nbPosition = { x: -270, y: 140, z: -100 };
-  const nbTarget = { x: -270, y: 140, z: -180 };
+  const nbPosition = { x: -0.65, y: 12, z: 0 };
+  const nbTarget = { x: -0.65, y: 12, z: -11 };
 
   const handleNoticeBoardClick = () => {
     console.log("nbClick")

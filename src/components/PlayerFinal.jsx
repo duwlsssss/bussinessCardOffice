@@ -173,7 +173,7 @@ const Player=({controlsRef})=>{
                 mass={30}
             >
                 <CapsuleCollider 
-                    args={[20,30]} 
+                    args={[30,30]} 
                     position={[-20,56,1600]}
                     // position={[0,56,450]} //내부 테스트용
                     onCollisionEnter={(other)=>{

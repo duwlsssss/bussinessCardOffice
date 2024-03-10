@@ -7,9 +7,7 @@ import useCameraStore from '../store/cameraStore';
 // import { gsap } from 'gsap/gsap-core';
 import usePlayerStore from  "../store/playerStore"
 import { RigidBody,CapsuleCollider,useRapier } from '@react-three/rapier';
-import {Controls} from '../App'
-// import RAPIER from '@dimforge/rapier3d-compat'
-import {usePersonControls} from "../hooks/useInput copy";
+import {usePersonControls} from "../hooks/usePlayerControls";
 
 const MOVEMENT_SPEED = 100;
 const direction = new THREE.Vector3()
@@ -21,28 +19,12 @@ const Player=({controlsRef})=>{
     const { isFocused, clearFocus } = useCameraStore();
     const setPlayerPosition = usePlayerStore(state => state.setPlayerPosition);
     const isVisible = usePlayerStore(state => state.isVisible);
-    const [isCollided,setIsCollided]=useState("false");
     const playerRef=useRef();
     const rigidbody=useRef();
     const currentAction =useRef(null);
 
-    // const rapier = useRapier();
-
     const { forward, backward, left, right } = usePersonControls();
 
-    // useEffect(() => {
-    //     if (!rapier) {
-    //         console.log("rapier npt initialized");
-    //         return; // Rapier가 초기화되었는지 
-    //     }else{
-    //         console.log("Rapier initialized");
-    //         // const world = rapier.world;
-    //         // let characterController = world.createCharacterController(0.1);
-    //         // characterController.enableAutostep(0.7, 0.2, true);
-    //         // characterController.enableSnapToGround(0.7);
-    //     }
-    // }, []);
-    
     const { scene, animations } = useGLTF("./models/character_standing.glb");
     const { actions } = useAnimations(animations, scene);
     // console.log("actions",actions)
@@ -97,14 +79,14 @@ const Player=({controlsRef})=>{
         if(!isFocused){
             
 
-            const velocity = rigidbody.current.linvel();
+            const linvelY = rigidbody.current.linvel().y;
 
             // console.log(`Before movement calculation - Position: x=${playerRef.current.position.x}, y=${playerRef.current.position.y}, z=${playerRef.current.position.z}`);
             // movement
             frontVector.set(0, 0, backward - forward)
             sideVector.set(left - right, 0, 0)
             direction.subVectors(frontVector, sideVector).normalize().multiplyScalar(MOVEMENT_SPEED).applyEuler(state.camera.rotation)
-            rigidbody.current.setLinvel({ x: direction.x, y: velocity.y, z: direction.z })
+            rigidbody.current.setLinvel({ x: direction.x, y: linvelY, z: direction.z })
             
             if (forward || backward || left || right) {
                 // 방향에 따른 회전 각도 계산
