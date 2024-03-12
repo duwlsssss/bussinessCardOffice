@@ -23,6 +23,13 @@ const Player = () => {
     //     cameraTarget: state.cameraTarget,
     //     setCameraTarget: state.setCameraTarget,
     // }));
+    
+    const { isInside, setIsInside } = useInOutStore((state) => ({
+        isInside: state.isInside,
+        setIsInside: state.setIsInside,
+    }));
+
+
     const rapier = useRapier(null);
     const characterRef = useRef();
     const characterCollider = useRef(null);
@@ -77,10 +84,7 @@ const Player = () => {
     const { forward, backward, left, right, jump } = usePersonControls();
 
 
-    const monitor = useGLTF('/models/monitor.glb')
-    const { handleMonitorClick } = FocusOnMonitor();
-
-    const { scene, animations } = useGLTF("./models/character_standing.glb");
+    const { scene, animations } = useGLTF("./models/character_standing_medium.glb");
     const { actions } = useAnimations(animations, scene);
     // console.log("actions",actions)
 
@@ -130,7 +134,8 @@ const Player = () => {
     useEffect(() => {
         const { world } = rapier
         const c = world.createCharacterController(0.1)
-        c.enableAutostep(0.5, 0.01, true);
+        c.setUp({ x: 0.0, y: 1.0, z: 0.0 });
+        c.enableAutostep(5, 0.005, true); //5보다 높은 장애물, 0.005보다 작은 너비의 장애물은 못 올라감
         c.setApplyImpulsesToDynamicBodies(true);
         // c.setCharacterMass(1);
         c.enableSnapToGround(0.5);
@@ -142,8 +147,7 @@ const Player = () => {
             try {
                 const position = vec3(characterRigidBody.current.translation());
                 const movement = vec3();
-                // console.log("curent position test",position)
-                // console.log(`Current Position: x=${position.x}, y=${position.y}, z=${position.z}`);
+                console.log(`Current Position: x=${position.x}, y=${position.y}, z=${position.z}`);
 
                 // Calculate rotation angle from state.camera direction
                 let angleYCameraDirection = Math.atan2(
@@ -215,10 +219,33 @@ const Player = () => {
 
                 // console.log("after",position.x,position.y,position.z)
 
+                for (let i = 0; i < characterController.current.numComputedCollisions(); i++) {
+                    let collision = characterController.current.computedCollision(i);
+                    let collider = collision.collider; // 충돌한 콜라이더 객체
+                    // colliderSet에서 충돌한 콜라이더의 정보를 얻음
+                    let colliderInfo = collider.colliderSet.get(collider.handle);
+                    // 충돌한 콜라이더의 _shape 정보
+                    let shape = colliderInfo._shape;
+                    // shape의 halfExtents 값을 확인하여 문 크기 검사
+                    if (shape.type === 1 && // Box 타입인지 확인
+                    shape.halfExtents.x === 4.5 && // halfExtents의 x값
+                    shape.halfExtents.y === 4.5 && // halfExtents의 y값
+                    shape.halfExtents.z === 1) {   // halfExtents의 z값
+                    console.log("GoInDoor와 충돌 감지");
+                    setIsInside(true);
+                    }
+                    else if (shape.type === 1 &&
+                    shape.halfExtents.x === 4 && 
+                    shape.halfExtents.y === 4.5 && 
+                    shape.halfExtents.z === 1) {   
+                    console.log("GoOutDoor와 충돌 감지");
+                    setIsInside(false);
+                    }
+                }
                 
                 // 플레이어 위치에 따라 카메라 위치 업데이트
-                camera.position.set(position.x,position.y+13,position.z+40);
-                camera.lookAt(position.x,position.y-2,position.z);
+                camera.position.set(position.x,position.y+8,position.z+12);
+                camera.lookAt(position.x,position.y+2,position.z);
                 camera.updateProjectionMatrix()
 
                 //npc가 플레이어 방향으로 회전하게 위치 저장
@@ -252,19 +279,20 @@ const Player = () => {
                 type="kinematicPosition"
                 colliders={false}
                 enabledRotations={[false, false, false]}
+                // position={[0, 7, 120]} 
+                position={[0, 7, 30]} //문앞
             >
                 <CapsuleCollider
                     args={[1.5, 2]}
                     ref={characterCollider}
-                    // position={[0,60,1600]}
-                    position={[0, 5.7, 30]} //외부 테스트(문앞)
                 />
                 <primitive
                     object={scene}
                     ref={characterRef}
                     scale={2.4}
-                    // position={[0,28,1600]}
-                    position={[0, 2.5, 30]} //외부 테스트(문앞)
+                    position={[0, -3.4, 0]} 
+                    // position={[0, -3.4, -30]} //외부 테스트(문앞)
+                   
                 />
             </RigidBody>
         </>

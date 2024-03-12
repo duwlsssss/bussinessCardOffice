@@ -1,7 +1,7 @@
 import {Canvas} from '@react-three/fiber'
 import React, { Suspense, useMemo, useState, lazy } from 'react'
 import { Physics } from '@react-three/rapier'
-import { Gltf, KeyboardControls, OrbitControls,Stats} from '@react-three/drei'
+import { Gltf, KeyboardControls, OrbitControls,Stats,Preload} from '@react-three/drei'
 import Loader from './components/Loader';
 import * as THREE from 'three';
 import "./App.css"
@@ -22,8 +22,6 @@ import { Perf } from "r3f-perf";
 
 function App() {
 
-  const { cameraPosition, setCameraPosition } = useCameraStore();
-
   // const map = useMemo(() =>
   //   [
   //     { name: Controls.forward, keys: ["ArrowUp", "KeyW"] },
@@ -33,7 +31,6 @@ function App() {
   //   ], []
   // );
 
-  const { x, y, z } = cameraPosition;
 
   const { axesHelperEnabled, statsEnabled, physicsDebugEnabled, PerfEnabled } = useControls({
     axesHelperEnabled: true,
@@ -60,12 +57,13 @@ function App() {
         //   }}
         >
           
-          <PerspectiveCamera position={[x,y,z]} fov={75} near={1} far={1000} />
+          <PerspectiveCamera position={[0,100,200]} fov={75} near={1} far={1000} />
           <Suspense debug fallback={<Loader/>}>
             <Physics debug={physicsDebugEnabled} timeStep={"vary"}> 
+              {PerfEnabled&&<Perf position="top-left" />}
               {axesHelperEnabled &&<axesHelper args={[500, 500, 500]} />} {/*월드좌표축*/}
               {statsEnabled && <Stats />}
-              {PerfEnabled&&<Perf position="top-left" />}
+              <Preload all />
               <Element3D/>
             </Physics>
           </Suspense>

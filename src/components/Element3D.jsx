@@ -1,6 +1,6 @@
 import React,{useEffect,useRef, useState, useMemo} from "react"
 import { useLoader, useFrame, useThree, extend} from '@react-three/fiber';
-import { useGLTF, Environment, Html, OrbitControls,Text, Sky,ContactShadows} from "@react-three/drei"
+import { useGLTF, Environment, Html, OrbitControls,Text, Sky, Detailed} from "@react-three/drei"
 import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
@@ -10,12 +10,12 @@ import NPC from "./NPC";
 import Player from "./PlayerFinal copy 5";
 import FocusOnMonitor from "./FocusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
-import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import PrintCard from "./PrintCard";
 import Gallery from "./Gallery";
-import { useControls } from "leva";
 import useInOutStore from "../store/inOutStore"
 import { Water } from 'three-stdlib'
+import { RigidBody, CuboidCollider } from '@react-three/rapier';
+
 
 extend({ Water })
 
@@ -43,6 +43,7 @@ function Ocean() {
     useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
     return <water ref={ref} args={[geom, config]} position={[0, 5, 52]} rotation-x={-Math.PI / 2} />
   }
+  
 
 function Element3D(){
 
@@ -54,10 +55,11 @@ function Element3D(){
     // const [isInside, setIsInside]=useState(true); //내부 테스트용
     
 
-    const office_objects = useGLTF('./models/office_modeling.glb')
+
+    const office_objects = useGLTF('./models/office_modeling_draco.glb')
     // const floor = useGLTF('./models/wall_floor.glb')
-    const monitor = useGLTF('/models/monitor.glb')
-    const office_outside = useGLTF('/models/external_modeling.glb')
+    const monitor = useGLTF('/models/monitor_draco.glb')
+    const office_outside = useGLTF('/models/external_modeling_draco.glb')
     // const office = useGLTF('/models/office.glb')
 
 
@@ -95,6 +97,12 @@ function Element3D(){
     const { handleMonitorClick } = FocusOnMonitor();
     // const { handleNoticeBoardClick } = FocusOnNoticeBoard();
 
+
+
+
+
+
+
     return(
         <>
             {/* <OrbitControls makeDefault/> */}
@@ -118,220 +126,239 @@ function Element3D(){
                 shadow-mapSize-width={1024}
                 shadow-mapSize-height={1024}
             /> 
-            {!isInside&&(<Ocean />)}
-            {!isInside&&(
-            <RigidBody
-                type="fixed"
-                colliders="trimesh"
-                name="out_floor"
-                position={[4,-5,0]}
-                rotation={[0, 90 * Math.PI / 180, 0]} 
-            >
-                <primitive
-                    object={office_outside.scene}
-                />
-            </RigidBody>
-            )}
-            {/*outSide-inSide*/}
-            {!isInside && (
+                {/* 나갈떄 내려가는 거 방지용 */}
+                {!isInside&&(
+                <RigidBody colliders={false} type="fixed" name="in_floor">
+                    <CuboidCollider position={[0, 0, 12]} args={[300, 1, 250]} />
+                </RigidBody>
+                )}
+                {!isInside&&(<Ocean />)}
+                {!isInside&&(
                 <RigidBody
                     type="fixed"
-                    name="GoInDoor"
-                    // setNextKinamaticTranslation-kinematicPosition 장:부드러운 움직임 단:충돌 이벤트 불가
-                    // setTranslation-dynamic 장: 단: 충돌 이벤트가 되긴하는데 잘 인식이 안됨, 움직임 끊김
-                    // onCollisionEnter={({other}) => {
-                    //     console.log("collision detected")
-                    //     if(other.rigidBodyObject.name==="Player"){
-                    //         console.log("GoInDoor collision with",other.rigidBodyObject.name);
-                    //     }}}
-                    // onCollisionExit={({other}) => {
-                    //     console.log("collision detected")
-                    //     if(other.rigidBodyObject.name==="Player"){
-                    //         console.log("GoInDoor collision exit with",other.rigidBodyObject.name);
-                    //         setIsInside(true);
-                    //     }}}
+                    colliders="trimesh"
+                    name="out_floor"
+                    position={[4,-5,0]}
+                    rotation={[0, 90 * Math.PI / 180, 0]} 
                 >
-                    <mesh 
-                        position={[-0.4, 7.1, 12]} 
-                        onClick={() => { console.log("GoInDoor clicked!"); setIsInside(true); }}
-                    >
-                        <boxGeometry args={[9, 9, 2]} />
-                        <meshStandardMaterial color="red"
-                            transparent={true}
-                            opacity={0.1} />
-                    </mesh>
-                </RigidBody>
-            )}
-            {/* //stair test
-            {!isInside && (
-                <RigidBody
-                    type="fixed"
-                >
-                    <mesh 
-                        position={[0, 0.5, 25.5]} 
-                    >
-                        <boxGeometry args={[10, 2, 2]} />
-                        <meshStandardMaterial color="blue"
-                            transparent={true}
-                            opacity={0.5} />
-                    </mesh>
-                </RigidBody>
-            )}
-            {!isInside && (
-                <RigidBody
-                    type="fixed"
-                >
-                    <mesh 
-                        position={[0, 0.5, 28]} 
-                    >
-                        <boxGeometry args={[10, 2, 2]} />
-                        <meshStandardMaterial color="blue"
-                            transparent={true}
-                            opacity={0.5} />
-                    </mesh>
-                </RigidBody> 
-            )}*/}
-            {/* 나갈떄 내려가는 거 방지용 */}
-            {!isInside&&(
-            <RigidBody colliders={false} type="fixed" name="in_floor">
-                <CuboidCollider position={[0, 0, 12]} args={[30, 1, 25]} />
-            </RigidBody>
-            )}
-
-            {isInside && (
-                <RigidBody type="fixed" name="GoOutDoor"
-                    // onCollisionEnter={({other}) => {
-                    //     console.log("collision detected")
-                    //     if(other.rigidBodyObject.name==="Player"){
-                    //         console.log("GoOutDoor collision with",other.rigidBodyObject.name);
-                            
-                    //     }}}
-                    //     onCollisionExit={({other}) => {
-                    //         console.log("collision detected")
-                    //         if(other.rigidBodyObject.name==="Player"){
-                    //             console.log("GoOutDoor collision with",other.rigidBodyObject.name);
-                    //             setIsInside(false);
-                    //     }}}
-                >
-                    <mesh 
-                        position={[-0.4, 7.1, 22]}  
-                        onClick={() => { console.log("GoOutDoor clicked!"); setIsInside(false);}}
-                    >
-                        <boxGeometry
-                            args={[9, 9, 2]}
-                        />
-                        <meshStandardMaterial color="blue"
-                            transparent={true}
-                            opacity={0.1} />
-                    </mesh>
-                </RigidBody>
-            )}
-            {isInside && (
-                <Text
-                    color="blue"
-                    fontSize={2}
-                    letterSpacing={0.02}
-                    textAlign={'center'}
-                    anchorX="center"
-                    anchorY="middle"
-                    position={[0, 14, 20]}
-                >
-                    Go Outside
-                </Text>
-            )}
-            {isInside && (
-                <mesh
-                    ref={arrowRef}
-                    position={[0, 12.5, 20]}
-                    rotation={[Math.PI, 0, 0]}
-                >
-                    <coneGeometry args={[0.5, 0.8, 10]} />
-                    <meshStandardMaterial color="blue" />
-                </mesh>
-            )}
-            {isInside&&(        
-            <spotLight
-                ref={spotLightRef}
-                position={[-28.5,15,-30.5]} // 램프의 위치에 맞게 조정
-                target-position={[-28.5,0,-30.5]}
-                angle={40*Math.PI/180}
-                penumbra={0.2}
-                color={"gold"}
-                intensity={500}
-            />)}
-            {isInside&&(
-                <RigidBody type="fixed">
-                <Html 
-                    className="monitorScreen" 
-                    transform
-                    occlude="blending"
-                    //[-12.7,-1.6,-4]
-                    scale={0.11}
-                    position={[-0.65,11.3,-11.6]}
-                >
-                    <iframe src="https://kimmyungsa.netlify.app"
-                        allow="camera;"
-                        style={{ width: '1600px', height: '1200px' }}
+                    <primitive
+                        object={office_outside.scene}
                     />
-                </Html>
                 </RigidBody>
-            )}
+                )}
+                {/*outSide*/}
+                {!isInside && (
+                    <RigidBody
+                        type="fixed"
+                        name="GoInDoor"
+                    >
+                        <mesh 
+                            position={[-0.4, 7.1, 12]} 
+                            // onClick={() => { console.log("GoInDoor clicked!"); setIsInside(true); }}
+                        >
+                            <boxGeometry args={[9, 9, 2]} />
+                            <meshStandardMaterial color="red"
+                                transparent={true}
+                                opacity={0.1} />
+                        </mesh>
+                    </RigidBody>
+                )}
+                {/*이상한데 올라가는 거 방지*/}
+                {/*왼쪽기둥*/}
+                {!isInside&&(
+                <RigidBody colliders="cuboid" type="fixed" >
+                    <mesh 
+                            position={[-6.1, 7, 14.5]}  
+                        >
+                            <boxGeometry
+                                args={[2.3, 12, 5]}
+                            />
+                            <meshStandardMaterial color="gray"
+                                transparent={true}
+                                opacity={0.1} />
+                        </mesh>
+                </RigidBody>
+                )}
+                {/*오른쪽기둥*/}
+                {!isInside&&(
+                <RigidBody colliders="cuboid" type="fixed" >
+                    <mesh 
+                            position={[5.45, 7, 14.5]}  
+                        >
+                            <boxGeometry
+                                args={[2.3, 12, 5]}
+                            />
+                            <meshStandardMaterial color="gray"
+                                transparent={true}
+                                opacity={0.1} />
+                        </mesh>
+                </RigidBody>
+                )}
+                {/*분수대*/}
+                {!isInside&&(
+                <RigidBody colliders="hull" type="fixed" >
+                    <mesh 
+                            position={[0.4, 3, 52]}  
+                        >
+                            <cylinderGeometry
+                                args={[10.8, 10.8, 10, 15]}
+                            />
+                            <meshStandardMaterial color="gray"
+                                transparent={true}
+                                opacity={0.1} />
+                        </mesh>
+                </RigidBody>
+                )}
+                {/*계단 자연스럽게 오르게*/}
+                {!isInside && (
+                    <RigidBody
+                        type="fixed"
+                    >
+                        <mesh 
+                            position={[-0.4, -0, 16]} 
+                            rotation={[-50*Math.PI/180,0,0]}
+                        >
+                            <boxGeometry args={[9.3, 4.9, 2]} />
+                            <meshStandardMaterial color="gray"
+                                transparent={true}
+                                opacity={0.2} />
+                        </mesh>
+                    </RigidBody>
+                )}
+                {/*inSide*/}
+                {isInside && (
+                    <RigidBody type="fixed" name="GoOutDoor"
+                    >
+                        <mesh 
+                            position={[-0.4, 7.1, 22]}  
+                            // onClick={() => { console.log("GoOutDoor clicked!"); setIsInside(false);}}
+                        >
+                            <boxGeometry
+                                args={[8, 9, 2]}
+                            />
+                            <meshStandardMaterial color="blue"
+                                transparent={true}
+                                opacity={0.1} />
+                        </mesh>
+                    </RigidBody>
+                )}
+                {isInside && (
+                    <Text
+                        color="blue"
+                        fontSize={2}
+                        letterSpacing={0.02}
+                        textAlign={'center'}
+                        anchorX="center"
+                        anchorY="middle"
+                        position={[0, 14, 20]}
+                    >
+                        Go Outside
+                    </Text>
+                )}
+                {isInside && (
+                    <mesh
+                        ref={arrowRef}
+                        position={[0, 12.5, 20]}
+                        rotation={[Math.PI, 0, 0]}
+                    >
+                        <coneGeometry args={[0.5, 0.8, 10]} />
+                        <meshStandardMaterial color="blue" />
+                    </mesh>
+                )}
+                {isInside&&(        
+                <spotLight
+                    ref={spotLightRef}
+                    position={[-28.5,15,-30.5]} // 램프의 위치에 맞게 조정
+                    target-position={[-28.5,0,-30.5]}
+                    angle={30*Math.PI/180}
+                    penumbra={0.2}
+                    color={"gold"}
+                    intensity={500}
+                />)}
+                {isInside&&(
+                    <RigidBody type="fixed">
+                    <Html 
+                        className="monitorScreen" 
+                        transform
+                        occlude="blending"
+                        scale={0.11}
+                        position={[-0.65,11.3,-11.6]}
+                    >
+                        <iframe src="https://kimmyungsa.netlify.app"
+                            allow="camera;"
+                            style={{ width: '1600px', height: '1200px' }}
+                        />
+                    </Html>
+                    </RigidBody>
+                )}
 
-            {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
-            {/*<primitive
-                object={floor.scene} 
-                scale={1.1}
-                position={[100,0,63]}
-            />  */}
-            {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
-            {isInside&&(<RigidBody 
-                type="fixed"
-                colliders={false}
-                // colliders="trimesh"
-                scale={0.1}
-                rotation={[0, -90 * Math.PI / 180, 0]} 
-                position={[-7,1.3,-8]}
-            >
-                <primitive
-                    object={office_objects.scene} 
-                /> 
-            </RigidBody>)}
-            {isInside&&(
-            <RigidBody 
-                type="fixed"
-                scale={0.2}
-                position={[-12.7,-1.6,-4]}
-                rotation={[0, -90 * Math.PI / 180, 0]} 
-            >
-                <primitive
-                    object={monitor.scene}
-                    onClick={handleMonitorClick} // 이벤트 핸들러 수정
-                />
-            </RigidBody>
-            )}
-            {/* <RigidBody type="fixed" 
-                scale={1.1}
-                position={[-70,0,63]}
-                rotation={[0, -90 * Math.PI / 180, 0]}
-            >
-                <primitive
-                    object={office.scene}
-                />
-            </RigidBody> */}
-            {/*사무실 바닥*/}
-            {isInside&&(
-            <RigidBody colliders={false} type="fixed" name="in_floor">
-                <CuboidCollider position={[10, 1.5, -20]} args={[45, 0.5, 40]} />
-            </RigidBody>
-            )}
-            {/* <NPC/>  */}
-            <Player/>
-            {/* {isInside&&(
-            <PrintCard/>
-            )}  */}
-            {/* {isInside&&(
-            <Gallery/>
-            )}  */}
+                {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
+                {/*<primitive
+                    object={floor.scene} 
+                    scale={1.1}
+                    position={[100,0,63]}
+                />  */}
+                {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
+                {isInside&&(<RigidBody 
+                    type="fixed"
+                    colliders={false}
+                    // colliders="trimesh"
+                    scale={0.1}
+                    rotation={[0, -90 * Math.PI / 180, 0]} 
+                    position={[-7,1.3,-8]}
+                >
+                    <primitive
+                        object={office_objects.scene} 
+                    /> 
+                {/*건물 밖에서 보이는 안 부분*/}
+                </RigidBody>)}
+                {!isInside&&(<RigidBody 
+                    type="fixed"
+                    colliders={false}
+                    scale={[0.01,0.04,0.033]}
+                    rotation={[0, -90 * Math.PI / 180, 0]} 
+                    position={[-5.7,1.3,7.5]}
+                >
+                    <primitive
+                        object={office_objects.scene} 
+                    /> 
+                </RigidBody>)}
+                {isInside&&(
+                <RigidBody 
+                    type="fixed"
+                    scale={0.2}
+                    position={[-12.7,-1.6,-4]}
+                    rotation={[0, -90 * Math.PI / 180, 0]} 
+                >
+                    <primitive
+                        object={monitor.scene}
+                        onClick={handleMonitorClick} // 이벤트 핸들러 수정
+                    />
+                </RigidBody>
+                )}
+                {/* <RigidBody type="fixed" 
+                    scale={1.1}
+                    position={[-70,0,63]}
+                    rotation={[0, -90 * Math.PI / 180, 0]}
+                >
+                    <primitive
+                        object={office.scene}
+                    />
+                </RigidBody> */}
+                {/*사무실 바닥*/}
+                {isInside&&(
+                <RigidBody colliders={false} type="fixed" name="in_floor">
+                    <CuboidCollider position={[10, 1.5, -20]} args={[45, 0.5, 40]} />
+                </RigidBody>
+                )}
+                {/* <NPC/>  */}
+                <Player/>
+                {/* {isInside&&(
+                <PrintCard/>
+                )}  */}
+                {/* {isInside&&(
+                <Gallery/>
+                )}  */}
         </>
     );
 }
