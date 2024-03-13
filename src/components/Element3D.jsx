@@ -56,8 +56,8 @@ function Element3D(){
     
 
 
-    const office_objects = useGLTF('./models/office_modeling_draco.glb')
-    // const floor = useGLTF('./models/wall_floor.glb')
+    const office_objects = useGLTF('/models/office_modeling_draco.glb')
+    // const floor = useGLTF('/models/wall_floor.glb')
     const monitor = useGLTF('/models/monitor_draco.glb')
     const office_outside = useGLTF('/models/external_modeling_draco.glb')
     // const office = useGLTF('/models/office.glb')

@@ -146,9 +146,9 @@ const FocusOnMonitor = () => {
         duration: 1,
         ease: "power3.inOut",
         onComplete: () => {
+          setIsVisible(true);
           setBeforeCamera(null);
           clearFocus();
-          setIsVisible(true);
         },
       });
     }

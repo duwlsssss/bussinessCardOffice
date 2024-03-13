@@ -84,7 +84,7 @@ const Player = () => {
     const { forward, backward, left, right, jump } = usePersonControls();
 
 
-    const { scene, animations } = useGLTF("./models/character_standing_medium.glb");
+    const { scene, animations } = useGLTF("/models/character_standing_medium.glb");
     const { actions } = useAnimations(animations, scene);
     // console.log("actions",actions)
 

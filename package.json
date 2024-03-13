@@ -36,6 +36,7 @@
     "react-dom": "^18.2.0",
     "react-three-third-person": "^0.4.6",
     "stats.js": "^0.17.0",
+    "styled-components": "^6.1.8",
     "three": "^0.160.1",
     "three-stdlib": "^2.28.9",
     "three-web-layer": "^2.0.13",
