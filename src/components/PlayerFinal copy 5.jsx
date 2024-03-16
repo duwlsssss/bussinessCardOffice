@@ -148,7 +148,6 @@ const Player = () => {
     useFrame((state, delta) => {
         if (characterCollider.current && characterRigidBody.current && characterController.current&&!isFocused) {
             try {
-                console.log("캐릭터")
                 const position = vec3(characterRigidBody.current.translation());
                 const movement = vec3();
                 // console.log(`Current Position: x=${position.x}, y=${position.y}, z=${position.z}`);

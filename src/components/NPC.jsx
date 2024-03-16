@@ -32,10 +32,11 @@ const NPC = () => {
   const npcRigidBody = useRef(null);
 
   const { isFocused, clearFocus } = useCameraStore();
-  const { user, isLoggedIn } = useLoginStore(state => ({
-    user: state.user,
-    isLoggedIn: state.isLoggedIn
-  }));
+  // const { user, isLoggedIn } = useLoginStore(state => ({
+  //   user: state.user,
+  //   isLoggedIn: state.isLoggedIn
+  // }));
+  const user = useLoginStore((state)=>state.user)
   const {showLogin, setShowLogin} =useLoginStore(state => ({
     showLogin: state.showLogin,
     setShowLogin: state.setShowLogin
@@ -102,9 +103,17 @@ const NPC = () => {
   // }, [playerPosition]); // 플레이어 위치가 변경될 때마다 
   
 
+  useEffect(() => {
+    if (user) {
+      // 로그인 성공 시 로그인 메시지와 로그인 버튼을 숨기고 다음 메시지로 이동
+      setShowLogin(false);
+      handleNextClick(); // 다음 메시지로 자동 이동
+    }
+  }, [user]);
+
   const handleNextClick = () => {
     console.log("next click!!");
-    console.log("user",user);
+    // console.log("user",user);
 
     let nextIndex = (currentIndex + 1) % messages.length;
     console.log(`Next Index: ${nextIndex}, Message: ${messages[nextIndex]}`);
@@ -113,10 +122,11 @@ const NPC = () => {
 
     if (nextIndex === 0) {
       handleBackClick();
-    } else if (nextIndex === 4&& isLoggedIn) {  // 사용자가 로그인한 경우, 메시지를 사용자 이름으로 개인화
-        nextMessage = `반가워 ${user.name} ><`;
-    } else if (nextIndex === 4 && !isLoggedIn) {
-        // 사용자가 로그인하지 않은 경우, 로그인 버튼 표시
+    } else if (nextIndex === 4&&user) {  // 사용자가 로그인한 경우, 메시지를 사용자 이름으로 개인화 (&& isLoggedIn)
+      const userName = user.name; // user 객체에서 사용자 이름 가져오기
+      nextMessage = `반가워, ${userName} ><`; // 메시지를 사용자 이름으로 개인화
+    } else if (nextIndex === 4&&!user ) {
+        // 사용자가 로그인하지 않은 경우, 로그인 버튼 표시(&& !isLoggedIn)
         setShowLogin(true);
         return; // 이후 로직 중단
     }
