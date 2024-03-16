@@ -14,6 +14,7 @@ import Gallery from "./Gallery";
 import useInOutStore from "../store/inOutStore"
 import { Water } from 'three-stdlib'
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
+import useNPCStore from "../store/npcStore";
 
 extend({ Water })
 
@@ -51,6 +52,7 @@ function Element3D(){
     }));
     // const [isInside, setIsInside]=useState(false);
     // const [isInside, setIsInside]=useState(true); //내부 테스트용
+    const isIntroductionEnd = useNPCStore((state) => state.isIntroductionEnd);
     
 
 
@@ -344,20 +346,18 @@ function Element3D(){
                     intensity={1000}
                 />)}
                 {isInside&&(
-                    <RigidBody type="fixed">
-                        <Html 
-                            className="monitorScreen" 
-                            transform
-                            occlude="blending"
-                            scale={0.086}
-                            position={[-0.63,11.1,-12]}
-                        >
-                            <iframe src="https://kimmyungsa.netlify.app"
-                                allow="camera;"
-                                style={{ width: '1600px', height: '1200px' }}
-                            />
-                        </Html>
-                    </RigidBody>
+                    <Html 
+                        className="monitorScreen" 
+                        transform
+                        occlude="blending"
+                        scale={0.087}
+                        position={[-0.62,11.025,-12.16]}
+                    >
+                        <iframe src="https://kimmyungsa.netlify.app"
+                            allow="camera;"
+                            style={{ width: '1630px', height: '1210px' }}
+                        />
+                    </Html>
                 )}
 
                 {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
@@ -434,7 +434,7 @@ function Element3D(){
                 </RigidBody>
                 )}
                 <NPC/>
-                {isCharacterVisible&&(<Player/>)}
+                {isIntroductionEnd&&(<Player/>)}
                 {isInside&&(
                 <PrintCard/>
                 )} 

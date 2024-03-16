@@ -13,6 +13,7 @@ import { useControls,Leva } from 'leva';
 import { Perf } from "r3f-perf";
 import LoginOverlay from './components/LoginOverlay';
 
+
 const LazyComponent = lazy(() => import('./components/Element3D'));
 
 function App() {
@@ -45,7 +46,7 @@ function App() {
            </Physics>
          </Suspense>
       </Canvas>
-      <LoginOverlay/>
+      {/* <LoginOverlay/> */}
     </>
 
   );

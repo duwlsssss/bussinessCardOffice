@@ -19,6 +19,7 @@ const SPEED = 8;
 const Player = () => {
     const camera = useThree((state) => state.camera)
     const isAnimationComplete = useCameraStore((state) => state.isAnimationComplete);
+    const isIntroductionEnd = useNPCStore((state) => state.isIntroductionEnd);
     // const { cameraPosition, setCameraPosition, cameraTarget, setCameraTarget } = useCameraStore((state) => ({
     //     cameraPosition: state.cameraPosition,
     //     setCameraPosition: state.setCameraPosition,
@@ -30,8 +31,6 @@ const Player = () => {
         isInside: state.isInside,
         setIsInside: state.setIsInside,
     }));
-
-    const isIntroductionEnd = useNPCStore((state) => state.isIntroductionEnd);
 
     const rapier = useRapier(null);
     const characterRef = useRef();
@@ -276,7 +275,6 @@ const Player = () => {
 
     return (
         <>
-            {/* {isIntroductionEnd&&( */}
             <RigidBody
                 name="Player"
                 ref={characterRigidBody}
@@ -297,7 +295,6 @@ const Player = () => {
                     position={[0, -3, 0]} 
                 />
             </RigidBody>
-            {/* )} */}
         </>
     );
 };
