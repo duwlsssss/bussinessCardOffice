@@ -1,8 +1,5 @@
 import { GoogleLogin } from '@react-oauth/google';
-import useNPCStore from  "../store/npcStore";
 import {jwtDecode} from "jwt-decode";
-import { useDispatch } from 'react-redux';
-import loginWithGoogle from '../action/userAction';
 import useLoginStore from '../store/logInStore';
 import axios from 'axios';
 
