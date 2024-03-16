@@ -5,7 +5,7 @@ import useCameraStore from '../store/cameraStore';
 import usePlayerStore from  "../store/playerStore";
 
 const FocusOnNoticeBoard = () => {
-  const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
+  const setCharacterVisibl = usePlayerStore(state => state.setCharacterVisible); //플레이어 가시성 설정
   const { camera } = useThree();
   const { setFocus, clearFocus } = useCameraStore();
   const [beforeCamera, setBeforeCamera] = useState(null);
@@ -15,7 +15,7 @@ const FocusOnNoticeBoard = () => {
 
   const handleNoticeBoardClick = () => {
     console.log("nbClick")
-    setIsVisible(false); // 플레이어를 숨김
+    setCharacterVisible(false); // 플레이어를 숨김
     setFocus({ x: -270, y: 140, z: -100 }); // 포커스 대상의 좌표
     if (!beforeCamera && controlsRef.current) {
       setBeforeCamera({
@@ -39,7 +39,8 @@ const FocusOnNoticeBoard = () => {
         onUpdate: () => { controlsRef.current.update(); },
       });
     } else if(beforeCamera && controlsRef && controlsRef.current) {
-      setIsVisible(true); // 플레이어를 다시 표시
+      setCharacterVisible
+(true); // 플레이어를 다시 표시
       gsap.to(camera.position, {
         x: beforeCamera.position.x,
         y: beforeCamera.position.y,

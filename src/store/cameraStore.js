@@ -9,6 +9,8 @@ const useCameraStore = create((set) => ({
   cameraTarget: { x: 0, y: 0, z: 0 }, 
   setCameraPosition: (x, y, z) => set(() => ({ cameraPosition: { x, y, z } })),
   setCameraTarget: (x, y, z) => set(() => ({ cameraTarget: { x, y, z } })),
+  isAnimationComplete: false,
+  setAnimationComplete: (isComplete) => set({ isAnimationComplete: isComplete }),
 }));
 
 export default useCameraStore;

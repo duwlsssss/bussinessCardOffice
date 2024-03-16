@@ -2,10 +2,10 @@ import {create} from 'zustand';
 
 const useNPCStore = create(set => ({
   npcPosition: { x: 0, y: 0, z: 0 },
-  shouldRotatePlayer: false,
   setNpcPosition: (x, y, z) => set(() => ({ npcPosition: { x, y, z } })),
-  triggerPlayerRotation: () => set(() => ({ shouldRotatePlayer: true })),
-  resetPlayerRotationTrigger: () => set(() => ({ shouldRotatePlayer: false })),
-}));
-
+  isNpcVisible: false, // npc 초기 가시성 상태
+  setIsNpcVisible: (isNpcVisible) => set(() => ({ isNpcVisible })),
+  isIntroductionEnd: false, // npc 설명 끝남 여부
+  setIsIntroductionEnd: (isIntroductionEnd) => set(() => ({ isIntroductionEnd })),
+}))
 export default useNPCStore;

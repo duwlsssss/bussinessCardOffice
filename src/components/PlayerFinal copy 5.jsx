@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations, Text, ContactShadows } from '@react-three/drei';
+import { useGLTF, useAnimations, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import usePlayerStore from "../store/playerStore"
 import { RigidBody, CapsuleCollider, CuboidCollider, useRapier, vec3 } from '@react-three/rapier';
@@ -8,7 +8,8 @@ import { usePersonControls } from "../hooks/usePlayerControls";
 import useInOutStore from "../store/inOutStore";
 import { KinematicCharacterController } from "@dimforge/rapier3d-compat";
 import useCameraStore from '../store/cameraStore';
-import FocusOnMonitor from "./FocusOnMonitor";
+import useNPCStore from '../store/npcStore'
+
 let walkDirection = new THREE.Vector3();
 let rotateAngle = new THREE.Vector3(0, 1, 0);
 let rotateQurternion = new THREE.Quaternion();
@@ -17,6 +18,7 @@ const SPEED = 8;
 
 const Player = () => {
     const camera = useThree((state) => state.camera)
+    const isAnimationComplete = useCameraStore((state) => state.isAnimationComplete);
     // const { cameraPosition, setCameraPosition, cameraTarget, setCameraTarget } = useCameraStore((state) => ({
     //     cameraPosition: state.cameraPosition,
     //     setCameraPosition: state.setCameraPosition,
@@ -29,6 +31,7 @@ const Player = () => {
         setIsInside: state.setIsInside,
     }));
 
+    const isIntroductionEnd = useNPCStore((state) => state.isIntroductionEnd);
 
     const rapier = useRapier(null);
     const characterRef = useRef();
@@ -77,7 +80,7 @@ const Player = () => {
 
     const { isFocused, clearFocus } = useCameraStore();
     const setPlayerPosition = usePlayerStore(state => state.setPlayerPosition);
-    const isVisible = usePlayerStore(state => state.isVisible);
+    const isCharacterVisible = usePlayerStore(state => state.isCharacterVisible);
 
     const currentAction = useRef(null);
 
@@ -86,7 +89,7 @@ const Player = () => {
 
     const { scene, animations } = useGLTF("/models/character_standing_medium.glb");
     const { actions } = useAnimations(animations, scene);
-    // console.log("actions",actions)
+    // console.log("actions", actions)
 
 
     useEffect(() => {
@@ -108,9 +111,9 @@ const Player = () => {
 
     useEffect(() => {
         if (characterRef.current) {
-            characterRef.current.visible = isVisible;
+            characterRef.current.visible = isCharacterVisible;
         }
-    }, [isVisible]);
+    }, [isCharacterVisible]);
 
     // useEffect(() => {
     //     console.log(`Forward: ${forward}, Backward: ${backward}, Left: ${left}, Right: ${right}`);
@@ -118,7 +121,7 @@ const Player = () => {
 
 
     useEffect(() => {
-        const action = forward || backward || left || right ? "walkkk" : "standing_55";
+        const action = forward || backward || left || right ? "walking_55" : "standing_55";
 
         if (!currentAction.current || currentAction.current !== action) { //현재 액션과 다음 액션이 다르면 
             if (actions[action]) {
@@ -145,9 +148,10 @@ const Player = () => {
     useFrame((state, delta) => {
         if (characterCollider.current && characterRigidBody.current && characterController.current&&!isFocused) {
             try {
+                console.log("캐릭터")
                 const position = vec3(characterRigidBody.current.translation());
                 const movement = vec3();
-                console.log(`Current Position: x=${position.x}, y=${position.y}, z=${position.z}`);
+                // console.log(`Current Position: x=${position.x}, y=${position.y}, z=${position.z}`);
 
                 // Calculate rotation angle from state.camera direction
                 let angleYCameraDirection = Math.atan2(
@@ -156,7 +160,7 @@ const Player = () => {
                 );
 
                 // Calculate movement direction offset based on input
-                let newDirectionOffset = updateDirection(forward, backward, left, right);
+                let newDirectionOffset = updateDirection(forward, backward, left, right,jump);
 
                 // Update the model's rotation angle
                 rotateQurternion.setFromAxisAngle(
@@ -249,8 +253,8 @@ const Player = () => {
                 camera.updateProjectionMatrix()
 
                 //npc가 플레이어 방향으로 회전하게 위치 저장
-                const characterWorldPosition = characterRef.current.getWorldPosition(new THREE.Vector3());
-                setPlayerPosition(characterWorldPosition.x, characterWorldPosition.y, characterWorldPosition.z);
+                // const characterWorldPosition = characterRef.current.getWorldPosition(new THREE.Vector3());
+                setPlayerPosition(position.x, position.y, position.z);
             } catch (err) {
                 alert(err.name);
                 alert(err.message);
@@ -273,14 +277,15 @@ const Player = () => {
 
     return (
         <>
+            {/* {isIntroductionEnd&&( */}
             <RigidBody
                 name="Player"
                 ref={characterRigidBody}
                 type="kinematicPosition"
                 colliders={false}
                 enabledRotations={[false, false, false]}
-                // position={[0, 7, 120]} 
-                position={[0, 7, 30]} //문앞
+                // position={[0, 5, 130]} //시작위치
+                position={[0, 3, 30]} //문앞
             >
                 <CapsuleCollider
                     args={[1.5, 2]}
@@ -290,11 +295,10 @@ const Player = () => {
                     object={scene}
                     ref={characterRef}
                     scale={2.4}
-                    position={[0, -3.4, 0]} 
-                    // position={[0, -3.4, -30]} //외부 테스트(문앞)
-                   
+                    position={[0, -3, 0]} 
                 />
             </RigidBody>
+            {/* )} */}
         </>
     );
 };

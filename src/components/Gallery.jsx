@@ -1,101 +1,101 @@
 import React,{useEffect,useRef,useState } from "react"
-import { useThree, useFrame } from "@react-three/fiber";
-import * as THREE from 'three'; // THREE 모듈을 임포트
+import { useThree } from "@react-three/fiber";
 import { gsap } from 'gsap';
 import useCameraStore from '../store/cameraStore';
 import usePlayerStore from "../store/playerStore";
 import useCardImgStore from "../store/cardImgStore";
-import { Html, Image, ScrollControls, Scroll } from "@react-three/drei";
-import { easing } from 'maath'
+import { Html, Image } from "@react-three/drei";
+import { Vector3, Quaternion, Matrix4 } from 'three';
 
-const Gallery = ({ controlsRef }) => {
+const Gallery = () => {
     const { camera } = useThree();
     const { setFocus, clearFocus } = useCameraStore();
+    const [beforeCamera, setBeforeCamera] = useState(null); 
     const [showCube, setShowCube]=useState(true);
-    const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
+    const setIsCharacterVisible = usePlayerStore(state => state.setIsCharacterVisible); //플레이어 가시성 설정
     const images = useCardImgStore((state) => state.images); // Zustand 스토어에서 이미지 배열 가져오기
-
-    const nbPosition = { x: -270, y: 140, z: 20 };
-    const nbTarget = { x: -270, y: 140, z: -10 };
 
     const handleNoticeBoardClick = () => {
       console.log("nbClick")
-      setIsVisible(false); // 플레이어를 숨김
+      setIsCharacterVisible(false); // 플레이어를 숨김
       setShowCube(false); //큐브 숨김
-      setFocus({ x: -270, y: 140, z: 20 }); // 포커스 대상의 좌표
-        gsap.to(camera.position, {
-          x: nbPosition.x,
-          y: nbPosition.y,
-          z: nbPosition.z,
-          duration: 1,
-          ease: "power3.inOut",
+      setFocus({ x: -24, y: 15, z: -12 }); // 포커스 대상의 좌표
+      // 목표 위치와 시점을 설정
+      const targetPosition = new Vector3(-24, 15, -12);
+      const targetLookAt = new Vector3(-24, 15, -24);
+      // 목표 Quaternion 계산
+      const targetQuaternion = new Quaternion().setFromRotationMatrix(
+        new Matrix4().lookAt(targetPosition, targetLookAt, camera.up)
+      );
+
+      if (!beforeCamera) {
+        // 현재 카메라 상태 저장
+        setBeforeCamera({
+          position: camera.position.clone(),
+          rotation: camera.quaternion.clone(),
         });
-        gsap.to(controlsRef.current.target, {
-          x: nbTarget.x,
-          y: nbTarget.y,
-          z: nbTarget.z,
-          duration: 1,
-          ease: "power3.inOut",
-          onUpdate: () => { controlsRef.current.update(); },
-          // onComplete: () => {onEnterGallery();}
-        });
+      gsap.to(camera.position, {
+        x: targetPosition.x,
+        y: targetPosition.y,
+        z: targetPosition.z,
+        duration: 1,
+        ease: "power3.inOut",
+      });
+      gsap.to(camera.quaternion, {
+        x: targetQuaternion.x,
+        y: targetQuaternion.y,
+        z: targetQuaternion.z,
+        w: targetQuaternion.w,
+        duration: 1,
+        ease: "power3.inOut",
+      });
+    } else {
+      handleBackClick(); //원래 위치로 돌아감
       }
+    }
 
     const handleBackClick=()=>{
-      // onExitGallery();
-      setIsVisible(true); // 플레이어를 표시
-      setShowCube(true); //큐브 표시
-      const playerPos = usePlayerStore.getState().playerPosition;
-      if(playerPos && controlsRef.current) {
+      if (beforeCamera) {
+        setIsCharacterVisible(true);
+        setShowCube(true);
         gsap.to(camera.position, {
-          x: playerPos.x,
-          y: playerPos.y+130,
-          z: playerPos.z+100,
-          ease: "power3.inOut",
-          duration: 1,
+            x: beforeCamera.position.x,
+            y: beforeCamera.position.y,
+            z: beforeCamera.position.z,
+            duration: 1,
+            ease: "power3.inOut",
         });
-        gsap.to(controlsRef.current.target, {
-          x: playerPos.x,
-          y: playerPos.y+65,
-          z: playerPos.z,
+        // Quaternion을 사용하여 카메라 회전을 원래대로 복원
+        gsap.to(camera.quaternion, {
+          x: beforeCamera.rotation.x,
+          y: beforeCamera.rotation.y,
+          z: beforeCamera.rotation.z,
+          w: beforeCamera.rotation.w,
           duration: 1,
           ease: "power3.inOut",
-          onUpdate: () => { controlsRef.current.update(); },
-          onComplete: () => { 
+          onComplete: () => {
+            setBeforeCamera(null);
             clearFocus();
-            }
-        });
-    }}     
-    
+          },
+        })
+      }
+    };
     
 
     return (
       <>
-      {showCube ? (
-        <mesh onClick={handleNoticeBoardClick} position={[-260, 150, 0]}>
-          <boxGeometry args={[10, 10, 10]} />
+        <mesh onClick={handleNoticeBoardClick} position={[-24,15,-30]}>
+          <boxGeometry args={[1,1,1]} />
           <meshStandardMaterial color={'orange'} />
         </mesh>
-      ) : (
-        <>
-          {/* <ScrollControls horizontal damping={0.1} pages={images.length / 5}>
-            <Scroll>
-              {images.map((url, index) => (
-                <Image key={index} position={[index * 3 - images.length / 2, 0, 0]} url={url} scale={[1.5, 1.5, 1.5]} />
-              ))}
-            </Scroll>
-          </ScrollControls> */}
-          <Html transform occlude position={[-270, 140, 5]}>
-            <div className='gallery-canvas'>
-              <div className="back" onClick={handleBackClick}>❌</div>
-              <div className="gallery-description">Scroll to view Gallery</div>
-            </div>
-          </Html>
-        </>
-      )}
+        {!showCube&&(<Html transform occlude position={[-24,15,-29]}>
+          <div className='gallery-canvas'>
+            <div className="back" onClick={handleBackClick}>❌</div>
+            <div className="gallery-description">Scroll to view Gallery</div>
+          </div>
+        </Html>)}
       </>
   );
-  
 }
 
 export default Gallery;                                                      

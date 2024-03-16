@@ -1,7 +1,24 @@
 import { Html, useProgress } from '@react-three/drei'
 import styled from 'styled-components';
-import React,{useState, useEffect}from 'react';
+import React from 'react';
 
+const LoadingScreen=()=>{
+  const {progress}=useProgress();
+  return(
+    <Html>
+      <LoadingContainer>
+        <div className="wrapper">
+            <div className="circle1"></div>
+            <div className="circle2"></div>
+            <div className="circle3"></div>
+            <span>
+              {Math.round(progress)}% 
+              Loading</span>
+        </div>
+      </LoadingContainer>
+    </Html>
+  );
+}
 const LoadingContainer = styled.div`
   .wrapper{
     width:200px;
@@ -59,26 +76,4 @@ const LoadingContainer = styled.div`
     left:15%;
   `
 
-const Loader=()=>{
-  const {progress,active} = useProgress()
-
-  return active ? (
-    <Html>
-      <LoadingContainer>
-        <div className="wrapper">
-            <div className="circle1"></div>
-            <div className="circle2"></div>
-            <div className="circle3"></div>
-            {/* <div className="shadow"></div>
-            <div className="shadow"></div>
-            <div className="shadow"></div> */}
-            <span>
-              {/* {Math.round(progress)}%  */}
-              Loading</span>
-        </div>
-      </LoadingContainer>
-    </Html>
-  ):null;
-}
-
-export default Loader;
+export default LoadingScreen;

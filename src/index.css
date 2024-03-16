@@ -3,20 +3,34 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 1rem;
-  width: 280rem; 
-  height: 170rem; 
+  margin-top: -5.5rem;
+  width: 25rem; 
+  height: 3rem; 
   overflow: hidden; /* 내용이 넘칠 경우 숨깁니다. */
 }
 
 .speech-bubble-text {
-  font-size: 20rem;
+  display: ralative;
+  z-index: 100;
+  font-size: 1.2rem;
   max-width: 100%;
   color: black;
   white-space: normal; /* 줄바꿈을 허용합니다. */
   text-align: center; /* 텍스트를 중앙 정렬합니다. */
+  cursor: pointer;
 }
 
+.login-overlay {
+  /* background-color: blue; */
+  position: relative;
+  top: -570px;
+  left: 640px;
+  width: 13rem; 
+  height: 3rem; 
+  z-index: 100;
+  pointer-events: auto; /* 포인터 이벤트 활성화 */
+  cursor: pointer;
+}
 
 .print-canvas {
   display: flex;

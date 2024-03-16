@@ -1,21 +1,19 @@
 import React,{useEffect,useRef, useState, useMemo} from "react"
 import { useLoader, useFrame, useThree, extend} from '@react-three/fiber';
-import { useGLTF, Environment, Html, OrbitControls,Text, Sky, Detailed} from "@react-three/drei"
+import { useGLTF, Environment, Html, OrbitControls,Text, Sky, useAnimations} from "@react-three/drei"
 import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
 import NPC from "./NPC";
-// import Player from "./PlayerFinal";
-// import Player from "./PlayerFinal copy 4";
 import Player from "./PlayerFinal copy 5";
 import FocusOnMonitor from "./FocusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
+import usePlayerStore from  "../store/playerStore";
 import PrintCard from "./PrintCard";
 import Gallery from "./Gallery";
 import useInOutStore from "../store/inOutStore"
 import { Water } from 'three-stdlib'
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
-
 
 extend({ Water })
 
@@ -58,9 +56,52 @@ function Element3D(){
 
     const office_objects = useGLTF('/models/office_modeling_draco.glb')
     // const floor = useGLTF('/models/wall_floor.glb')
-    const monitor = useGLTF('/models/monitor_draco.glb')
+    // const monitor = useGLTF('/models/monitor_draco.glb')
     const office_outside = useGLTF('/models/external_modeling_draco.glb')
     // const office = useGLTF('/models/office.glb')
+    const flowers = useGLTF('/models/flowers.glb')
+
+    // const duckRef=useRef();
+    // const { scene, animations } = useGLTF("/models/lowpoly_duck_animated.glb");
+    // const { actions } = useAnimations(animations, scene);
+    // const [duckPosition, setduckPosition] = useState([0, 0, 0]);
+    // const [duckDirection, setDuckDirection] = useState(new THREE.Vector3(Math.random() * 2 - 1, 0, Math.random() * 2 - 1).normalize());
+    // const speed = 0.1;
+    // useEffect(() => {
+    //     // "walkcycle_1" 애니메이션을 찾아 재생
+    //     const action = actions["walkcycle_1"];
+    //     if (action) {
+    //         action.reset().play();
+    //     }
+
+    //     // 컴포넌트 언마운트 시 애니메이션 정지
+    //     return () => {
+    //         if (action) {
+    //             action.stop();
+    //         }
+    //     };
+    // }, [actions]); // 의존성 배열에 actions 추가
+    // useFrame(() => {
+    //     setduckPosition((prevPosition) => [
+    //       prevPosition[0] + duckDirection.x * speed,
+    //       2,
+    //       prevPosition[2] + duckDirection.z * speed
+    //     ]);
+    
+    //     // X축 경계 조정
+    //     if (duckPosition[0] > 5) {
+    //         setDuckDirection(new THREE.Vector3(-Math.abs(duckDirection.x), 0, duckDirection.z));
+    //     } else if (duckPosition[0] < -5) {
+    //         setDuckDirection(new THREE.Vector3(Math.abs(duckDirection.x), 0, duckDirection.z));
+    //     }
+
+    //     // Z축 경계 조정
+    //     if (duckPosition[2] > 140) {
+    //         setDuckDirection(new THREE.Vector3(duckDirection.x, 0, -Math.abs(duckDirection.z)));
+    //     } else if (duckPosition[2] < 80) {
+    //         setDuckDirection(new THREE.Vector3(duckDirection.x, 0, Math.abs(duckDirection.z)));
+    //     }
+    // });
 
 
     //조명 헬퍼
@@ -83,6 +124,12 @@ function Element3D(){
                 child.receiveShadow = true;
             }
         });
+        flowers.scene.traverse(child => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
     }, [office_objects,office_outside]);
 
     //문 충돌 확인 떔에 옮겨놓음
@@ -99,37 +146,35 @@ function Element3D(){
 
 
 
-
+    const isCharacterVisible = usePlayerStore(state => state.isCharacterVisible);
 
 
 
     return(
         <>
-            {/* <OrbitControls makeDefault/> */}
-            <Sky distance={200} sunPosition={[100,400,0]}/>
-            <Environment
-                preset="sunset"
-            />
-            <ambientLight intensity={0.1} color="#ffffff"/>
+            {/* <OrbitControls makeDefault/>  */}
+            <Sky distance={350} sunPosition={[100,400,0]}/>
+            <Environment preset="sunset"/>
+            <ambientLight intensity={2} color="#ffffff"/>
             <directionalLight
                 castShadow
                 ref={directionalLightRef}
-                intensity={1}
+                intensity={5}
                 position={[100,400,0]}
                 color={"#ffffff"}
-                shadow-camera-left={60}
-                shadow-camera-right={-130}
-                shadow-camera-top={90}
-                shadow-camera-bottom={-90}
+                shadow-camera-left={75}
+                shadow-camera-right={-200}
+                shadow-camera-top={110}
+                shadow-camera-bottom={-110}
                 shadow-camera-near={1}
                 shadow-camera-far={1000}
-                shadow-mapSize-width={1024}
-                shadow-mapSize-height={1024}
+                shadow-mapSize-width={4000}
+                shadow-mapSize-height={4000}
             /> 
                 {/* 나갈떄 내려가는 거 방지용 */}
                 {!isInside&&(
                 <RigidBody colliders={false} type="fixed" name="in_floor">
-                    <CuboidCollider position={[0, 0, 12]} args={[300, 1, 250]} />
+                    <CuboidCollider position={[0, 0, 40]} args={[120, 1, 120]} />
                 </RigidBody>
                 )}
                 {!isInside&&(<Ocean />)}
@@ -146,6 +191,17 @@ function Element3D(){
                     />
                 </RigidBody>
                 )}
+                {!isInside&&(
+                <RigidBody
+                    type="fixed"
+                    scale={1}
+                    position={[125,-5,130]}
+                >
+                    <primitive
+                        object={flowers.scene}
+                    />
+                </RigidBody>
+                )}
                 {/*outSide*/}
                 {!isInside && (
                     <RigidBody
@@ -154,7 +210,7 @@ function Element3D(){
                     >
                         <mesh 
                             position={[-0.4, 7.1, 12]} 
-                            // onClick={() => { console.log("GoInDoor clicked!"); setIsInside(true); }}
+                            onClick={() => { console.log("GoInDoor clicked!"); setIsInside(true); }} //orbit 켰을떄
                         >
                             <boxGeometry args={[9, 9, 2]} />
                             <meshStandardMaterial color="red"
@@ -198,10 +254,10 @@ function Element3D(){
                 {!isInside&&(
                 <RigidBody colliders="hull" type="fixed" >
                     <mesh 
-                            position={[0.4, 3, 52]}  
+                            position={[0.4, 3, 51.6]}  
                         >
                             <cylinderGeometry
-                                args={[10.8, 10.8, 10, 15]}
+                                args={[11, 11, 10, 15]}
                             />
                             <meshStandardMaterial color="gray"
                                 transparent={true}
@@ -225,13 +281,25 @@ function Element3D(){
                         </mesh>
                     </RigidBody>
                 )}
+                {/* {!isInside&&(
+                    <RigidBody 
+                    type="kinematicPosition"
+                    scale={7}
+                    ref={duckRef}
+                    position={duckPosition}
+                >
+                    <primitive
+                        object={scene} 
+                    /> 
+                </RigidBody>
+                )} */}
                 {/*inSide*/}
                 {isInside && (
                     <RigidBody type="fixed" name="GoOutDoor"
                     >
                         <mesh 
                             position={[-0.4, 7.1, 22]}  
-                            // onClick={() => { console.log("GoOutDoor clicked!"); setIsInside(false);}}
+                            onClick={() => { console.log("GoOutDoor clicked!"); setIsInside(false);}} //orbit 켰을떄
                         >
                             <boxGeometry
                                 args={[8, 9, 2]}
@@ -273,22 +341,22 @@ function Element3D(){
                     angle={30*Math.PI/180}
                     penumbra={0.2}
                     color={"gold"}
-                    intensity={500}
+                    intensity={1000}
                 />)}
                 {isInside&&(
                     <RigidBody type="fixed">
-                    <Html 
-                        className="monitorScreen" 
-                        transform
-                        occlude="blending"
-                        scale={0.11}
-                        position={[-0.65,11.3,-11.6]}
-                    >
-                        <iframe src="https://kimmyungsa.netlify.app"
-                            allow="camera;"
-                            style={{ width: '1600px', height: '1200px' }}
-                        />
-                    </Html>
+                        <Html 
+                            className="monitorScreen" 
+                            transform
+                            occlude="blending"
+                            scale={0.086}
+                            position={[-0.63,11.1,-12]}
+                        >
+                            <iframe src="https://kimmyungsa.netlify.app"
+                                allow="camera;"
+                                style={{ width: '1600px', height: '1200px' }}
+                            />
+                        </Html>
                     </RigidBody>
                 )}
 
@@ -325,6 +393,21 @@ function Element3D(){
                 </RigidBody>)}
                 {isInside&&(
                 <RigidBody 
+                    type="fixed" 
+                    name="monitor" 
+                    onClick={handleMonitorClick} >
+                    <mesh 
+                            position={[-0.6,10.7,-13.2]} 
+                        >
+                            <boxGeometry args={[4.5, 4.5, 3]} />
+                            <meshStandardMaterial color="purple"
+                                transparent={true}
+                                opacity={0} />
+                        </mesh>
+                </RigidBody>
+                )}
+                {/* {isInside&&(
+                <RigidBody 
                     type="fixed"
                     scale={0.2}
                     position={[-12.7,-1.6,-4]}
@@ -334,8 +417,7 @@ function Element3D(){
                         object={monitor.scene}
                         onClick={handleMonitorClick} // 이벤트 핸들러 수정
                     />
-                </RigidBody>
-                )}
+                </RigidBody> */}
                 {/* <RigidBody type="fixed" 
                     scale={1.1}
                     position={[-70,0,63]}
@@ -348,17 +430,17 @@ function Element3D(){
                 {/*사무실 바닥*/}
                 {isInside&&(
                 <RigidBody colliders={false} type="fixed" name="in_floor">
-                    <CuboidCollider position={[10, 1.5, -20]} args={[45, 0.5, 40]} />
+                    <CuboidCollider position={[10, 1.5, -10]} args={[45, 0.5, 30]} />
                 </RigidBody>
                 )}
-                {/* <NPC/>  */}
-                <Player/>
-                {/* {isInside&&(
+                <NPC/>
+                {isCharacterVisible&&(<Player/>)}
+                {isInside&&(
                 <PrintCard/>
-                )}  */}
-                {/* {isInside&&(
+                )} 
+                {isInside&&(
                 <Gallery/>
-                )}  */}
+                )} 
         </>
     );
 }

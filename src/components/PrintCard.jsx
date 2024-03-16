@@ -1,7 +1,7 @@
 import React,{useEffect,useRef,useState } from "react"
 import { Html } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
-import * as THREE from 'three'; // THREE 모듈을 임포트
+import { Vector3, Quaternion, Matrix4 } from 'three';
 import { gsap } from 'gsap';
 import useCameraStore from '../store/cameraStore';
 import usePlayerStore from "../store/playerStore";
@@ -16,7 +16,9 @@ const PrintCard = () => {
     const [overlayStyle, setOverlayStyle] = useState({}); //overlay 스타일 변화
     const [showQR, setShowQR] = useState(false); // QR 코드 표시 여부
     const [showSavePopup, setShowSavePopup] = useState(false); // 팝업 표시 여부
-    const setIsVisible = usePlayerStore(state => state.setIsVisible); //플레이어 가시성 설정
+    const [beforeCamera, setBeforeCamera] = useState(null); 
+    const setIsCharacterVisible = usePlayerStore(state => state.setIsCharacterVisible); //플레이어 가시성 설정
+    const playerPosition = usePlayerStore(state => state.playerPosition);
     
     // 자식 창에서 보낸 데이터 수신
     useEffect(() => {
@@ -40,38 +42,43 @@ const PrintCard = () => {
       };
     }, []);
   
-
     //인쇄 누르고 카메라 설정
-    const cameraPosition = { x: -11.6, y: 120, z: 270 };
-    const cameraTarget = { x: -11.6, y: 120, z: 200 };
     useEffect(() => {
       if (receivedData) {
         console.log('새로 받은 데이터:', receivedData);
-        setFocus({ x: -1.6, y: 106, z: 100 }); //포커스 대상의 좌표(isFocus)
-        if (controlsRef.current) {
-          gsap.to(camera.position, {
-            x: cameraPosition.x,
-            y: cameraPosition.y,
-            z: cameraPosition.z,
-            duration: 1,
-            ease: "power3.inOut",
+        setFocus({ x: -0.5, y: 10, z: -6 }); //포커스 대상의 좌표(isFocus)
+        // 목표 위치와 시점을 설정
+        const targetPosition = new Vector3(-0.5, 10, -6);
+        const targetLookAt = new Vector3(-0.5, 10, -9);
+        // 목표 Quaternion 계산
+        const targetQuaternion = new Quaternion().setFromRotationMatrix(
+          new Matrix4().lookAt(targetPosition, targetLookAt, camera.up)
+        );
+        if (!beforeCamera) {
+          // 현재 카메라 상태 저장
+          setBeforeCamera({
+            position: camera.position.clone(),
+            rotation: camera.quaternion.clone(),
           });
-          gsap.to(controlsRef.current.target, {
-            x: cameraTarget.x,
-            y: cameraTarget.y,
-            z: cameraTarget.z,
-            duration: 1,
-            ease: "power3.inOut",
-            onUpdate: () => { controlsRef.current.update(); },
-            onComplete:()=>{ 
-              // 카드로 카메라 이동 1초 후에 팝업 표시
-              setTimeout(() => {
-                setShowSavePopup(true);
-              }, 1000);
-            } 
-          });
-        }
-    }},[receivedData,controlsRef.current]);
+        gsap.to(camera.position, {
+          x: targetPosition.x,
+          y: targetPosition.y,
+          z: targetPosition.z,
+          duration: 1,
+          ease: "power3.inOut",
+        });
+        gsap.to(camera.quaternion, {
+          x: targetQuaternion.x,
+          y: targetQuaternion.y,
+          z: targetQuaternion.z,
+          w: targetQuaternion.w,
+          duration: 1,
+          ease: "power3.inOut",
+        });
+      } else {
+        handleBackClick(); //원래 위치로 돌아감
+      }
+    }},[receivedData]);
   
     //카드 마우스 오버 
     const handleMouseMove = (e) => {
@@ -123,26 +130,34 @@ const PrintCard = () => {
     };
 
     const handleBackClick=(e)=>{
-      e.stopPropagation()
-      setIsVisible(true); // 플레이어를 표시
-      setReceivedData(null);
-      const playerPos = usePlayerStore.getState().playerPosition;
-      if(playerPos && controlsRef.current) {
+      if (e) e.stopPropagation();
+      if (beforeCamera && playerPosition) {
+        setIsCharacterVisible(true);
+        setReceivedData(null);
+        const targetPosition = new Vector3(playerPosition.x, playerPosition.y + 8, playerPosition.z + 12); // 예시 위치, 조정 필요
+        const targetLookAt = new Vector3(playerPosition.x, playerPosition.y + 2, playerPosition.z); // 캐릭터를 바라보는 방향
+
+        // Quaternion을 사용하여 카메라 회전 목표 계산
+        const targetQuaternion = new Quaternion().setFromRotationMatrix(
+          new Matrix4().lookAt(targetPosition, targetLookAt, camera.up)
+        );
         gsap.to(camera.position, {
-          x: playerPos.x,
-          y: playerPos.y+130,
-          z: playerPos.z+100,
-          ease: "power3.inOut",
+          x: targetPosition.x,
+          y: targetPosition.y,
+          z: targetPosition.z,
           duration: 1,
+          ease: "power3.inOut",
         });
-        gsap.to(controlsRef.current.target, {
-          x: playerPos.x,
-          y: playerPos.y+65,
-          z: playerPos.z,
+
+        gsap.to(camera.quaternion, {
+          x: targetQuaternion.x,
+          y: targetQuaternion.y,
+          z: targetQuaternion.z,
+          w: targetQuaternion.w,
           duration: 1,
           ease: "power3.inOut",
-          onUpdate: () => { controlsRef.current.update(); },
-          onComplete: () => { 
+          onComplete: () => {
+            setBeforeCamera(null);
             clearFocus();
           },
         });
@@ -152,40 +167,41 @@ const PrintCard = () => {
     return (
       <>
         {receivedData && ( // receivedData가 있을 때만 아래의 내용을 렌더링
-          <Html transform occlude position={[-11.6,120.5,250]}>
+          <Html transform occlude position={[-0.5,10,-9]} scale={0.2}>
             <div className='print-canvas'>
               <div className="back" onClick={handleBackClick}>❌</div>
               {!showQR && (
-                  <div 
-                      className="cute-card"
-                      style={{
-                          transform: transform ? transform : undefined,
-                      }} 
-                      onMouseMove={handleMouseMove}
-                      onClick={handleQRClick}
-                  >
-                      <div className="school-logo"><img src="/images/schoolLogo/숭실대학교.png" alt="schoolLogo" /></div>
-                      <div className="name">🔖이름: {receivedData?.data?.name || 'N/A'}</div>
-                      <div className="email">📬E-mail: {receivedData?.data?.email || 'N/A'}</div>
-                      <div className="school">🎓학교: {receivedData?.data?.school || 'N/A'}</div>
-                      <div className="MBTI">🥕MBTI: {receivedData?.data?.MBTI || 'N/A'}</div>
-                      <div className="IG">🔖IG: {receivedData?.data?.ig || 'N/A'}</div>  
-                      <div className="id-picture"><img src="/images/idPicture.png" alt="idPicture" /></div>
-                      <div className="kim-logo"><img src="/images/kimLogo.png" alt="kimLogo" /></div>
-                      <div className="overlay"/>
-                  </div>
                   // <div 
-                  //     className="card-test"
+                  //     className="cute-card"
                   //     style={{
                   //         transform: transform ? transform : undefined,
                   //     }} 
                   //     onMouseMove={handleMouseMove}
                   //     onClick={handleQRClick}
                   // >
-                  //     <img src="/images/명함테스트.jpeg" alt="BC test"/>
-                  //     <div className="name">{receivedData?.data?.name || 'N/A'}</div>
+                  //     <div className="school-logo"><img src="/images/schoolLogo/숭실대학교.png" alt="schoolLogo" /></div>
+                  //     <div className="name">🔖이름: {receivedData?.data?.name || 'N/A'}</div>
+                  //     <div className="email">📬E-mail: {receivedData?.data?.email || 'N/A'}</div>
+                  //     <div className="school">🎓학교: {receivedData?.data?.school || 'N/A'}</div>
+                  //     <div className="MBTI">🥕MBTI: {receivedData?.data?.MBTI || 'N/A'}</div>
+                  //     <div className="IG">🔖IG: {receivedData?.data?.ig || 'N/A'}</div>  
+                  //     <div className="id-picture"><img src="/images/idPicture.png" alt="idPicture" /></div>
+                  //     <div className="kim-logo"><img src="/images/kimLogo.png" alt="kimLogo" /></div>
                   //     <div className="overlay"/>
                   // </div>
+                  <div 
+                      className="card-test"
+                      style={{
+                          transform: transform ? transform : undefined,
+                      }} 
+                      onMouseMove={handleMouseMove}
+                      onClick={handleQRClick}
+                  >
+                      <img src="/images/cardFront.jpeg" alt="BCF"/>
+                      {/* <img src="/images/cardBack.jpeg" alt="BCB"/> */}
+                      <div className="name">{receivedData?.data?.name || 'N/A'}</div>
+                      <div className="overlay"/>
+                  </div>
               )}
               {showQR && (
                   <div className="QR" onClick={handleQRClick}>
