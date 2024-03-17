@@ -38,30 +38,30 @@ const Player = () => {
     const characterController = useRef();
     const characterRigidBody = useRef(null);
 
-    const lastDirection = useRef(Math.PI);
+    const lastDirection = useRef(0);
     const updateDirection = (forward, backward, left, right) => {
-        var directionOffset = Math.PI; //front(in my project)
+        var directionOffset = 0; //front(in my project)
         if (forward) {
             if (left) {
-                directionOffset = Math.PI * 5 / 4;
+                directionOffset = Math.PI / 4;
             } else if (right) {
-                directionOffset = -Math.PI * 5 / 4;
+                directionOffset = -Math.PI / 4;
             }
         } else if (backward) {
             if (left) {
-                directionOffset = -Math.PI / 4;
+                directionOffset = -Math.PI * 5 / 4;
             } else if (right) {
-                directionOffset = Math.PI / 4;
+                directionOffset = Math.PI * 5 / 4;
             }
             else {
-                directionOffset = 0; //s
+                directionOffset = Math.PI; //s
             }
         } else if (right) {
-            directionOffset = Math.PI / 2; //a
+            directionOffset = -Math.PI / 2; //a
         }
         else if (left) {
-            directionOffset = -Math.PI / 2; //d
-        } else {
+            directionOffset = Math.PI / 2; //d
+        }else {
             //if no key input
             return lastDirection.current;
         }
@@ -139,7 +139,6 @@ const Player = () => {
         c.setUp({ x: 0.0, y: 1.0, z: 0.0 });
         c.enableAutostep(5, 0.005, true); //5보다 높은 장애물, 0.005보다 작은 너비의 장애물은 못 올라감
         c.setApplyImpulsesToDynamicBodies(true);
-        // c.setCharacterMass(1);
         c.enableSnapToGround(0.5);
         characterController.current = c;
     }, [rapier]);
@@ -183,8 +182,8 @@ const Player = () => {
                     // console.log("moveX",moveX);
                     // console.log("moveZ",moveZ);
 
-                    movement.x -= moveX;
-                    movement.z -= moveZ;
+                    movement.x += moveX;
+                    movement.z += moveZ;
                 }
                 // if(forward){
                 //     movement.z -= 5;
@@ -204,7 +203,7 @@ const Player = () => {
 
                 if (!refState.current.grounded) {
                     // Apply gravity
-                    velocity.y -= (9.807 * delta) / 3;
+                    velocity.y -= (9.807 * delta) / 2.5;
                 }
                 movement.add(velocity);
 
@@ -280,6 +279,7 @@ const Player = () => {
                 ref={characterRigidBody}
                 type="kinematicPosition"
                 colliders={false}
+                rotation={[0,Math.PI,0]}
                 enabledRotations={[false, false, false]}
                 // position={[0, 5, 130]} //시작위치
                 position={[0, 3, 30]} //문앞

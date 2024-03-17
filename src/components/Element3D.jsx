@@ -212,7 +212,7 @@ function Element3D(){
                     >
                         <mesh 
                             position={[-0.4, 7.1, 12]} 
-                            onClick={() => { console.log("GoInDoor clicked!"); setIsInside(true); }} //orbit 켰을떄
+                            // onClick={() => { console.log("GoInDoor clicked!"); setIsInside(true); }} //orbit 켰을떄
                         >
                             <boxGeometry args={[9, 9, 2]} />
                             <meshStandardMaterial color="red"
@@ -301,7 +301,7 @@ function Element3D(){
                     >
                         <mesh 
                             position={[-0.4, 7.1, 22]}  
-                            onClick={() => { console.log("GoOutDoor clicked!"); setIsInside(false);}} //orbit 켰을떄
+                            // onClick={() => { console.log("GoOutDoor clicked!"); setIsInside(false);}} //orbit 켰을떄
                         >
                             <boxGeometry
                                 args={[8, 9, 2]}
@@ -346,18 +346,18 @@ function Element3D(){
                     intensity={1000}
                 />)}
                 {isInside&&(
-                    <Html 
-                        className="monitorScreen" 
-                        transform
-                        occlude="blending"
-                        scale={0.087}
-                        position={[-0.62,11.025,-12.16]}
-                    >
-                        <iframe src="https://kimmyungsa.netlify.app"
-                            allow="camera;"
-                            style={{ width: '1630px', height: '1210px' }}
-                        />
-                    </Html>
+                <Html 
+                    className="monitor-screen" 
+                    transform
+                    occlude="blending"
+                    scale={0.087}
+                    position={[-0.62,11.025,-12.16]}
+                >
+                    <iframe src="https://kimmyungsa.netlify.app"
+                        allow="camera;"
+                        style={{ width: '1630px', height: '1210px' }}
+                    />
+                </Html>
                 )}
 
                 {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
@@ -392,19 +392,23 @@ function Element3D(){
                     /> 
                 </RigidBody>)}
                 {isInside&&(
-                <RigidBody 
-                    type="fixed" 
-                    name="monitor" 
-                    onClick={handleMonitorClick} >
-                    <mesh 
-                            position={[-0.6,10.7,-13.2]} 
-                        >
-                            <boxGeometry args={[4.5, 4.5, 3]} />
-                            <meshStandardMaterial color="purple"
-                                transparent={true}
-                                opacity={0} />
-                        </mesh>
-                </RigidBody>
+                <mesh 
+                    position={[-0.6,10.7,-13.2]} 
+                    onClick={handleMonitorClick}
+                    onPointerOver={(e) => {
+                        // 마우스가 Mesh 위에 있을 때 커서를 포인터로 변경
+                        document.body.style.cursor = 'pointer';
+                    }}
+                    onPointerOut={(e) => {
+                        // 마우스가 Mesh에서 벗어났을 때 커서를 기본으로 변경
+                        document.body.style.cursor = 'auto';
+                    }}
+                >
+                    <boxGeometry args={[4.5, 4.5, 3]} />
+                    <meshStandardMaterial color="purple"
+                        transparent={true}
+                        opacity={0} />
+                </mesh>
                 )}
                 {/* {isInside&&(
                 <RigidBody 

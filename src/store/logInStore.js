@@ -2,11 +2,11 @@ import {create} from 'zustand';
 import axios from 'axios';
 
 const useLoginStore = create((set) => ({
-  // user: null,
-  // setUser: (user) => set({ user, isLoggedIn: !!user }),
+  user: null,
+  setUser: (user) => set({ user, isLoggedIn: !!user }),
   showLogin: false, // 구글 로그인 버튼 표시 여부
   setShowLogin: (showLogin) => set(() => ({ showLogin })),
-  user: null,
+  isLoggedIn: false,
   isLoading: false,
   error: null,
   loginWithGoogle: async (token) => {
@@ -21,9 +21,8 @@ const useLoginStore = create((set) => ({
       }
     } catch (error) {
       set({ error: error.message, isLoading: false });
-    }
-  },
-  // isLoggedIn: false,
+    }}
+
   // login: async (token) => {
   //   try {
   //     const response = await axios.post("/auth/google", { token });

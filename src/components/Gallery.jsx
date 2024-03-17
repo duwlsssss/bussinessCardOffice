@@ -84,7 +84,17 @@ const Gallery = () => {
 
     return (
       <>
-        <mesh onClick={handleNoticeBoardClick} position={[-24,15,-30]}>
+        <mesh 
+          onClick={handleNoticeBoardClick} 
+          position={[-24,15,-30]}
+          onPointerOver={(e) => {
+            // 마우스가 Mesh 위에 있을 때 커서를 포인터로 변경
+            document.body.style.cursor = 'pointer';
+          }}
+          onPointerOut={(e) => {
+              // 마우스가 Mesh에서 벗어났을 때 커서를 기본으로 변경
+              document.body.style.cursor = 'auto';
+          }}>
           <boxGeometry args={[1,1,1]} />
           <meshStandardMaterial color={'orange'} />
         </mesh>

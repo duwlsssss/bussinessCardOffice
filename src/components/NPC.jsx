@@ -33,11 +33,7 @@ const NPC = () => {
   const npcRigidBody = useRef(null);
 
   const { isFocused, clearFocus } = useCameraStore();
-  // const { user, isLoggedIn } = useLoginStore(state => ({
-  //   user: state.user,
-  //   isLoggedIn: state.isLoggedIn
-  // }));
-  // const user = useLoginStore((state)=>state.user)
+ 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [message, setMessage] = useState(messages[0]);
   const npcPosition = useNPCStore((state) => state.npcPosition);
@@ -68,26 +64,36 @@ const NPC = () => {
   // const three=useThree();
   // console.log("three",three);//정보 출력
 
-  
   //로그인 관련 
-  const [showLogin, setShowLogin] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState(""); //사용자 이름 저장
+  const { user, isLoggedIn } = useLoginStore(state => ({
+    user: state.user,
+    isLoggedIn: state.isLoggedIn
+  }));
+  const { showLogin, setShowLogin } = useLoginStore(state => ({
+    showLogin: state.showLogin,
+    setShowLogin: state.setShowLogin
+  }));
+  // const user = useLoginStore((state)=>state.user)
+  // const [showLogin, setShowLogin] = useState(false);
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [userName, setUserName] = useState(""); //사용자 이름 저장
 
-  useEffect(() =>{
-    //백엔드 서버로 silent-refresh 요청을 보냄
-    //사용자의 로그인 상태를 확인하고, 새로운 액세스 토큰을 발급받음
-    axios.post('http://localhost:3000/user/auth/silent-refresh',{}, {
-      withCredentials:true
-    }).then(res=> {
-      console.log(res);
-      const {accessToken} = res.data; //accessToken을 추출하여 로컬 상태에 저장
-      console.log(accessToken);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`; //Axios의 기본 헤더에 이 토큰을 추가
-      //사용자가 로그인했음을 확인, 이후의 요청에 사용자 인증 정보를 포함시킬 수 있음
-      setIsLoggedIn(true)
-    });
-  },[])
+  // useEffect(() =>{
+  //   //백엔드 서버로 silent-refresh 요청을 보냄
+  //   //사용자의 로그인 상태를 확인하고, 새로운 액세스 토큰을 발급받음
+  //   axios.post('http://localhost:3000/user/auth/silent-refresh',{}, {
+  //     withCredentials:true
+  //   }).then(res=> {
+  //     console.log(res);
+  //     const {accessToken} = res.data; //accessToken을 추출하여 로컬 상태에 저장
+  //     console.log(accessToken);
+  //     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`; //Axios의 기본 헤더에 이 토큰을 추가
+  //     //사용자가 로그인했음을 확인, 이후의 요청에 사용자 인증 정보를 포함시킬 수 있음
+  //     setIsLoggedIn(true)
+  //   }).catch(error => {
+  //     console.error('Silent refresh error:', error);
+  //   });
+  // },[])
 
   //그림자
   useEffect(()=>{
@@ -98,13 +104,6 @@ const NPC = () => {
         }
     });
   },[scene]);
-
-  // useEffect(() => {
-  //   const isLoaded = scene && actions && Object.keys(actions).length > 0;
-  //   if (isLoaded) {
-  //       actions.standing_55.play();
-  //   }
-  // }, [scene, actions]);
 
   // 에니메이션 바뀔 때 효과 
   useEffect(()=>{
@@ -136,10 +135,10 @@ const NPC = () => {
 
     if (nextIndex === 0) {
       handleBackClick();
-    } else if (nextIndex === 4&& isLoggedIn) {  // 사용자가 로그인한 경우, 메시지를 사용자 이름으로 개인화 
+    } else if (nextIndex === 4&& user) {  // 사용자가 로그인한 경우, 메시지를 사용자 이름으로 개인화 
        // user 객체에서 사용자 이름 가져오기
       nextMessage = `반가워,  ><`; // 메시지를 사용자 이름으로 개인화
-    } else if (nextIndex === 4&& !isLoggedIn) {
+    } else if (nextIndex === 4&& !user) {
         // 사용자가 로그인하지 않은 경우, 로그인 버튼 표시
         setShowLogin(true);
         return; // 이후 로직 중단
@@ -148,8 +147,6 @@ const NPC = () => {
     setCurrentIndex(nextIndex);
     setMessage(nextMessage);
 };
-
-  
 
   
 
@@ -197,7 +194,7 @@ const NPC = () => {
   const handleBackClick=() => {
     console.log("speech end")
     setIsCharacterVisible(true);
-    isIntroductionEnd(true);
+    setIsIntroductionEnd(true);
     setCurrentAnimation((prev) => prev==="standing_55" ? "walking_55" : "standing_55")
   }
 
@@ -264,7 +261,16 @@ const NPC = () => {
         {showSpeechBubble && (
           <Html position={[npcPosition.x, npcPosition.y + 5, npcPosition.z+0.1]} transform occlude>
             <div className='speech-bubble'>
-              <div className="speech-bubble-text">{message}</div>
+              <div className="speech-bubble-text"
+                onPointerOver={(e) => {
+                  document.body.style.cursor = 'default';
+              }}
+              onPointerOut={(e) => {
+                  document.body.style.cursor = 'auto';
+              }}
+              >
+                {message}
+              </div>
             </div>
           </Html>
         )}
@@ -274,14 +280,15 @@ const NPC = () => {
           <meshStandardMaterial color={"blue"} />
         </mesh>
         )} 
-        {showLogin && (
+        {/* {showLogin && (
         <Html position={[npcPosition.x-2 , npcPosition.y+6, npcPosition.z+0.1]}>
           <button type="button" className="login-with-google-btn">
-            <a href="http://localhost:8000/user/auth/google">구글로 로그인하기</a>
-            {/*사용자가 이 주소로 접근, 서버는 사용자를 Google의 OAuth 인증 페이지로 리다이렉트(redirect), 여기서 사용자는 자신의 Google 계정으로 로그인*/}
+            <a href="http://localhost:8000/user/auth/google">
+            구글로 로그인하기
+            </a>
           </button>
         </Html>
-        )}
+        )} */}
         {/* {showSpeechBubble && (
         <mesh position={[npcPosition.x + 5.5, npcPosition.y+8, npcPosition.z]} onClick={handleBackClick}>
           <boxGeometry args={[0.7, 0.7, 0.7]} />

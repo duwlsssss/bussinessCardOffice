@@ -46,7 +46,7 @@ function App() {
            </Physics>
          </Suspense>
       </Canvas>
-      {/* <LoginOverlay/> */}
+      <LoginOverlay/>
     </>
 
   );
