@@ -60,7 +60,7 @@ function Element3D(){
     const logout = useLoginStore(state => state.logout);
 
 
-    const office_objects = useGLTF('/models/office_modeling_draco.glb')
+    const office_objects = useGLTF('./models/office_modeling_draco.glb')
     // const floor = useGLTF('/models/wall_floor.glb')
     // const monitor = useGLTF('/models/monitor_draco.glb')
     const office_outside = useGLTF('/models/external_modeling_draco.glb')
@@ -136,7 +136,7 @@ function Element3D(){
                 child.receiveShadow = true;
             }
         });
-    }, [office_objects,office_outside]);
+    }, [office_objects,office_outside,flowers]);
 
     //문 충돌 확인 떔에 옮겨놓음
     const arrowRef = useRef();
@@ -385,8 +385,8 @@ function Element3D(){
                     <primitive
                         object={office_objects.scene} 
                     /> 
-                {/*건물 밖에서 보이는 안 부분*/}
                 </RigidBody>)}
+                {/* 건물 밖에서 보이는 안 부분
                 {!isInside&&(<RigidBody 
                     type="fixed"
                     colliders={false}
@@ -397,7 +397,7 @@ function Element3D(){
                     <primitive
                         object={office_objects.scene} 
                     /> 
-                </RigidBody>)}
+                </RigidBody>)} */}
                 {isInside&&(
                 <mesh 
                     position={[-0.6,10.7,-13.2]} 
