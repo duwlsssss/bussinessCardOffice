@@ -60,7 +60,7 @@ function Element3D(){
     const logout = useLoginStore(state => state.logout);
 
 
-    const office_objects = useGLTF('/models/office_modeling.glb')
+    // const office_objects = useGLTF('/models/office_modeling.glb')
     // const floor = useGLTF('/models/wall_floor.glb')
     // const monitor = useGLTF('/models/monitor_draco.glb')
     const office_outside = useGLTF('/models/external_modeling_draco.glb')
@@ -118,12 +118,12 @@ function Element3D(){
 
     //그림자 넣기
     useEffect(() => {
-        office_objects.scene.traverse(child => {
-            if (child.isMesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        });
+        // // office_objects.scene.traverse(child => {
+        //     if (child.isMesh) {
+        //         child.castShadow = true;
+        //         child.receiveShadow = true;
+        //     }
+        // });
         office_outside.scene.traverse(child => {
             if (child.isMesh) {
                 child.castShadow = true;
@@ -136,7 +136,7 @@ function Element3D(){
                 child.receiveShadow = true;
             }
         });
-    }, [office_objects,office_outside,flowers]);
+    }, [office_outside,flowers]);
 
     //문 충돌 확인 떔에 옮겨놓음
     const arrowRef = useRef();
@@ -374,7 +374,7 @@ function Element3D(){
                     position={[100,0,63]}
                 />  */}
                 {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
-                {isInside&&(<RigidBody 
+                {/* {isInside&&(<RigidBody 
                     type="fixed"
                     colliders={false}
                     // colliders="trimesh"
@@ -385,7 +385,7 @@ function Element3D(){
                     <primitive
                         object={office_objects.scene} 
                     /> 
-                </RigidBody>)}
+                </RigidBody>)} */}
                 {/* 건물 밖에서 보이는 안 부분
                 {!isInside&&(<RigidBody 
                     type="fixed"
