@@ -13,10 +13,11 @@ import useLoginStore from '../store/logInStore';
 
 //npc 대사
 const introMessage = [
-  "안녕 김명사에 온 걸 환영해~~",
+  "안녕 김명사에 온 걸 환영해 ~~",
   "김명사는 대학생을 위한 명함 제작소야",
   "너만의 개성이 담긴 명함을 만들어봐",
   "명함을 만드려면 로그인부터 해야해",
+  "아래 버튼을 클릭해 로그인해줘",
   "난 바빠서 이만 사무실로 가야해 ∙∙∙",
   "명함을 만들고싶으면 사무실로 와 !!!",
 ];
@@ -57,29 +58,6 @@ const NPCIntro = () => {
     setShowLogin: state.setShowLogin
   }));
 
-  // const user = useLoginStore((state)=>state.user)
-  // const [showLogin, setShowLogin] = useState(false);
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [userName, setUserName] = useState(""); //사용자 이름 저장
-
-  // useEffect(() =>{
-  //   //백엔드 서버로 silent-refresh 요청을 보냄
-  //   //사용자의 로그인 상태를 확인하고, 새로운 액세스 토큰을 발급받음
-  //   axios.post('http://localhost:3000/user/auth/silent-refresh',{}, {
-  //     withCredentials:true
-  //   }).then(res=> {
-  //     console.log(res);
-  //     const {accessToken} = res.data; //accessToken을 추출하여 로컬 상태에 저장
-  //     console.log(accessToken);
-  //     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`; //Axios의 기본 헤더에 이 토큰을 추가
-  //     //사용자가 로그인했음을 확인, 이후의 요청에 사용자 인증 정보를 포함시킬 수 있음
-  //     setIsLoggedIn(true)
-  //   }).catch(error => {
-  //     console.error('Silent refresh error:', error);
-  //   });
-  // },[])
-
-
   // const three=useThree();
   // console.log("three",three);//정보 출력
 
@@ -109,45 +87,51 @@ const NPCIntro = () => {
     }
   },[actions,currentAnimation]);
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      setShowLogin(false); // 로그인 상태에서는 로그인 버튼을 숨김
+      if (currentIndex === 4) {
+        setMessage(`반가워 ${user.user.name} ><`);
+      }
+    } else {
+      // 로그인이 되어있지 않다면, 로그인 버튼 표시
+      if (currentIndex === 4) {
+        setShowLogin(true);
+      }
+    }
+  }, [isLoggedIn, currentIndex]); 
+  
+
   const handleNextClick = () => {
     console.log("next click!!");
-  
+   
     let nextIndex = currentIndex + 1;
-    
-    // 로그인 상태가 아니고 현재 메시지가 "명함을 만드려면 로그인부터 해야해"이면 로그인 버튼 출력 
-    if (nextIndex === 4 && !isLoggedIn) {
-      setShowLogin(true);
-      setMessage(introMessage[3]); // "명함을 만드려면 로그인부터 해야해" 메시지 유지
-      return; // 로그인 하지 않은 상태에서는 다음 메시지로 넘어가지 않도록 함
-    }
-    // 로그인 상태이면 사용자 이름과 반가워 출력
-    if (isLoggedIn && nextIndex === 4) {
-      setMessage(`반가워 ${user.name} ><`);
-      nextIndex++; // 사용자 이름을 포함한 메시지를 표시한 후 다음 메시지로 넘어감
-    }
-    const finalIndex = nextIndex % introMessage.length;
-    console.log(`Next Index: ${finalIndex}, Message: ${introMessage[finalIndex]}`);
-  
-    setCurrentIndex(finalIndex);
 
-    // "명함을 만드려면 로그인부터 해야해" 메시지가 아닐 때만 메시지 업데이트
-    if (finalIndex !== 3) { 
-      setMessage(introMessage[finalIndex]);
+    console.log(`Next Index: ${nextIndex}, Message: ${introMessage[nextIndex]}`);
+
+    if (nextIndex >= introMessage.length) {
+      nextIndex = 0; // 다시 처음으로 돌아갔을 때
     }
-  
-    // 다시 처음으로 돌아갔을 때 
-    if (finalIndex === 0) {
-      console.log("speech end")
+
+    if (nextIndex === 0) {
+      console.log("Speech End");
       setIsIntroductionEnd(true);
     }
-  };
 
-  useEffect(() => {
-    // 로그인 상태(user가 존재하는 상태)가 되면 자동으로 다음 메시지로 넘어가기
-    if (isLoggedIn  && currentIndex === 3) {
-      handleNextClick();
+    if (nextIndex === 4 && !isLoggedIn) {
+      // 로그인 상태가 아니고 현재 메시지가 "명함을 만드려면 로그인부터 해야해"이면 로그인 버튼 출력
+      setShowLogin(true);
+      setMessage(introMessage[nextIndex]); // 현재 메시지 유지
+     } else {
+      setShowLogin(false); // 로그인 버튼을 숨김
+      setMessage(introMessage[nextIndex]);
+      setCurrentIndex(nextIndex); // 다음 인덱스로 업데이트
     }
-  }, [isLoggedIn]);
+
+    // 로그인 상태이면 "반가워" 출력
+    if (isLoggedIn && nextIndex === 4) {
+
+  };}
 
 
   useEffect(() => {

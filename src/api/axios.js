@@ -1,5 +1,7 @@
 import axios from 'axios';
 const host = window.location.hostname === "localhost" ? "http://localhost:8000": 'http://kimmyungsa.us-east-2.elasticbeanstalk.com';
+//로컬 서버(http://localhost:8000)를 사용하고, 실제 운영 환경에서는 다른 주소(http://kimmyungsa.us-east-2.elasticbeanstalk.com)를 사용
+//로컬 네트워크에서 다른 컴퓨터의 IP 주소가 192.168.1.5라면, baseURL을 http://192.168.1.5:8000으로 설정해야 
 //axios 인스턴스 생성
 const api = axios.create({
     baseURL: host, //API baseURL 
