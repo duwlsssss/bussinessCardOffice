@@ -1,8 +1,8 @@
 import {Canvas} from '@react-three/fiber'
 import React, { Suspense, useMemo, useState, lazy, useEffect } from 'react'
 import { Physics } from '@react-three/rapier'
-import { Gltf, KeyboardControls, OrbitControls,Stats,Preload, Html,useProgress} from '@react-three/drei'
-import LoadingScreen from './components/LoadingScreen';
+import { Gltf, KeyboardControls, OrbitControls,Stats, Html,useProgress,Loader} from '@react-three/drei'
+import LoadingScreen2 from './components/LoadingScreen2';
 import CameraAnimation from './components/CameraAnimation'
 import * as THREE from 'three';
 import "./App.css"
@@ -35,7 +35,7 @@ function App() {
             far: 1000,
           }}
       >
-      <Suspense fallback={<LoadingScreen/>}>
+      <Suspense fallback={<LoadingScreen2/>}>
             {/* <PerspectiveCamera position={[0,50,150]} fov={75} near={1} far={1000} /> */}
            <Physics debug={physicsDebugEnabled} timeStep={"vary"}> 
              {PerfEnabled&&<Perf position="top-left" />}

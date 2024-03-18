@@ -40,12 +40,9 @@ function CameraAnimation() {
           y: 8, 
           z: 130,
           duration: 0.5,
-          onUpdate: () => {
-            camera.lookAt(0, 7.5, 120);
-          },
-          onComplete: () => {
-            setIsNpcVisible(true); 
-          }
+          onStart:()=>{setIsNpcVisible(true);},
+          onUpdate: () => {camera.lookAt(0, 7.5, 120);},
+          onComplete: () => {}
         });
       }
     };

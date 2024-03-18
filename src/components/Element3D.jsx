@@ -4,7 +4,8 @@ import { useGLTF, Environment, Html, OrbitControls,Text, Sky, useAnimations} fro
 import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
 import { DirectionalLightHelper, SpotLightHelper } from 'three';
-import NPC from "./NPC";
+import NPCIntro from './NPCIntro';
+import NPCIn from './NPCIn';
 import Player from "./PlayerFinal copy 5";
 import FocusOnMonitor from "./FocusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
@@ -14,7 +15,8 @@ import Gallery from "./Gallery";
 import useInOutStore from "../store/inOutStore"
 import { Water } from 'three-stdlib'
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
-import useNPCStore from "../store/npcStore";
+import useNPCIntrStoreStore from "../store/npcStore";
+import useLoginStore from '../store/logInStore';
 
 extend({ Water })
 
@@ -52,8 +54,10 @@ function Element3D(){
     }));
     // const [isInside, setIsInside]=useState(false);
     // const [isInside, setIsInside]=useState(true); //내부 테스트용
-    const isIntroductionEnd = useNPCStore((state) => state.isIntroductionEnd);
-    
+    const isIntroductionEnd = useNPCIntrStoreStore((state) => state.isIntroductionEnd);
+
+    const isLoggedIn = useLoginStore((state) => state.isLoggedIn);
+    const logout = useLoginStore(state => state.logout);
 
 
     const office_objects = useGLTF('/models/office_modeling_draco.glb')
@@ -144,11 +148,14 @@ function Element3D(){
     });
 
     const { handleMonitorClick } = FocusOnMonitor();
-    // const { handleNoticeBoardClick } = FocusOnNoticeBoard();
 
+    //로그아웃 처리
+    const handleLogout = () => {
+        logout(); // 로그아웃 함수 호출
+        console.log('Logged out successfully');
+    };
 
-
-    const isCharacterVisible = usePlayerStore(state => state.isCharacterVisible);
+    //소리 유무 처리
 
 
 
@@ -437,14 +444,23 @@ function Element3D(){
                     <CuboidCollider position={[10, 1.5, -10]} args={[45, 0.5, 30]} />
                 </RigidBody>
                 )}
-                <NPC/>
-                {isIntroductionEnd&&(<Player/>)}
                 {isInside&&(
                 <PrintCard/>
                 )} 
                 {isInside&&(
                 <Gallery/>
                 )} 
+                {!isInside&&<NPCIntro/>}
+                {isInside&&<NPCIn/>}
+                {isIntroductionEnd&&(<Player/>)}
+                {/*로그아웃 버튼*/}
+                {isLoggedIn && (
+                    <Html position={[100,50,100]}>
+                        <button type="button" className="btn logout" onClick={handleLogout}>
+                            LogOut
+                        </button>
+                    </Html>
+                )}
         </>
     );
 }

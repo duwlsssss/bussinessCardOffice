@@ -39,8 +39,7 @@ const FocusOnNoticeBoard = () => {
         onUpdate: () => { controlsRef.current.update(); },
       });
     } else if(beforeCamera && controlsRef && controlsRef.current) {
-      setCharacterVisible
-(true); // 플레이어를 다시 표시
+      setIsCharacterVisible(true); // 플레이어를 다시 표시
       gsap.to(camera.position, {
         x: beforeCamera.position.x,
         y: beforeCamera.position.y,

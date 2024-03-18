@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import axios from 'axios';
+import api from '../api/axios'
 
 const useLoginStore = create((set) => ({
   user: null,
@@ -10,34 +11,33 @@ const useLoginStore = create((set) => ({
   isLoading: false,
   error: null,
   loginWithGoogle: async (token) => {
+    // try {
+    //   set({ isLoading: true });
+    //   // 실제 API 요청 코드 필요, 밑엔 테스트용으로 넣어둔거임
+    //   const response = { status: 200, data: { name: 'Google User', email: 'user@example.com' } }; 
+    //   if (response.status === 200) {
+    //     set({ user: response.data, isLoading: false }); // 사용자 정보로 response.data 설정
+    //   } else {
+    //     throw new Error('Login failed');
+    //   }
+    // } catch (error) {
+    //   set({ error: error.message, isLoading: false });}}
+    
     try {
-      set({ isLoading: true });
-      // 실제 API 요청 코드 필요, 밑엔 임의로 넣어둔거임
-      const response = { status: 200, data: { name: 'Google User', email: 'user@example.com' } }; 
-      if (response.status === 200) {
-        set({ user: response.data, isLoading: false }); // 사용자 정보로 response.data 설정
-      } else {
+       // 백엔드로 구글 로그인 토큰 전송 및 검증 요청
+       const response = await api.post("/auth/google", { token });
+        // 서버로부터 받은 사용자 정보로 상태 업데이트
+        if (response.status === 200) {
+          set({ user: response.data, isLoggedIn: true, isLoading: false, error: null });
+        } else {
         throw new Error('Login failed');
+        }
+      } catch (error) {
+        set({ error: error.message, isLoading: false, isLoggedIn: false, showLogin: true });
       }
-    } catch (error) {
-      set({ error: error.message, isLoading: false });
-    }}
-
-  // login: async (token) => {
-  //   try {
-  //     const response = await axios.post("/auth/google", { token });
-  //     if (response.status === 200) {
-  //       set({ user: response.data, isLoggedIn: true});
-  //     } else {
-  //       throw new Error('Login failed');
-  //     }
-  //   } catch (error) {
-  //     console.error("Login error:", error);
-  //     set({ isLoggedIn: false, showLogin: true });
-  //   }
-  // },
-  // logout: () => set({ user: null, isLoggedIn: false })
-}));
+    },
+      logout: () => set({ user: null, isLoggedIn: false, showLogin: true })
+    }));
 
 export default useLoginStore;
 

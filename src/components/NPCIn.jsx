@@ -9,33 +9,19 @@ import { useLoader } from '@react-three/fiber';
 import { TextureLoader } from 'three';
 import * as THREE from 'three';
 import { RigidBody, CapsuleCollider, CuboidCollider, useRapier, vec3 } from '@react-three/rapier';
-import useInOutStore from "../store/inOutStore";
 import useLoginStore from '../store/logInStore';
-import axios from 'axios';
 
 //npc 대사
-const messages = [
-  "안녕 김명사에 온 걸 환영해",
-  "김명사는 대학생을 위한 명함 제작소야",
-  "너만의 개성이 담긴 명함을 만들어봐",
-  "명함을 만드려면 로그인부터 해야해",
-  "반가워 ><",
-  "이제 명함을 만들러 가보자 !"
+const messsages = [
+  "궁금한 게 있으면 나한테 물어봐!!",
 ];
 
-const NPC = () => {
-  const isAnimationComplete = useCameraStore((state) => state.isAnimationComplete);
-  const { isInside, setIsInside } = useInOutStore((state) => ({
-    isInside: state.isInside,
-    setIsInside: state.setIsInside,
-  }));
-  const npcRef = useRef();
-  const npcRigidBody = useRef(null);
-
-  const { isFocused, clearFocus } = useCameraStore();
+const NPCIntro = () => {
  
+  const { isFocused, clearFocus } = useCameraStore();
+
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [message, setMessage] = useState(messages[0]);
+  const [message, setMessage] = useState(messsages[0]);
   const npcPosition = useNPCStore((state) => state.npcPosition);
   const setNpcPosition = useNPCStore(state => state.setNpcPosition);
   const isIntroductionEnd = useNPCStore((state) => state.isIntroductionEnd);
@@ -45,24 +31,17 @@ const NPC = () => {
   const setPlayerPosition = usePlayerStore(state => state.setPlayerPosition);
   const isCharacterVisible = usePlayerStore(state => state.isCharacterVisible);
   const setIsCharacterVisible = usePlayerStore(state => state.setIsCharacterVisible); //플레이어 가시성 설정
-  // const setIsCollided = usePlayerStore(state => state.setIsCollided); //플레이어 충돌
 
   const { scene, animations } = useGLTF("/models/character_standing_medium.glb");
   const { actions } = useAnimations(animations, scene);
-
-  // const [beforeCamera, setBeforeCamera] = useState(null);
-  // const [showSphere,setShowSphere]=useState(false);
-  const [showSpeechBubble, setShowSpeechBubble] = useState(false); // 말풍선 표시 상태
   const [currentAnimation, setCurrentAnimation] = useState("standing_55");
 
   // console.log("actions",actions); //에니메이션 종류 확인 
 
-  // 말풍선 텍스처
-  // const texture = useLoader(TextureLoader, '/images/speechBubble.png');
-  const texture = useLoader(TextureLoader, '/images/speechBubble2.png');
+  const [showSpeechBubble, setShowSpeechBubble] = useState(false); // 말풍선 표시 상태
 
-  // const three=useThree();
-  // console.log("three",three);//정보 출력
+  // 말풍선 텍스처
+  const texture = useLoader(TextureLoader, '/images/speechBubble2.png');
 
   //로그인 관련 
   const { user, isLoggedIn } = useLoginStore(state => ({
@@ -73,6 +52,7 @@ const NPC = () => {
     showLogin: state.showLogin,
     setShowLogin: state.setShowLogin
   }));
+
   // const user = useLoginStore((state)=>state.user)
   // const [showLogin, setShowLogin] = useState(false);
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -94,6 +74,14 @@ const NPC = () => {
   //     console.error('Silent refresh error:', error);
   //   });
   // },[])
+
+
+  // const three=useThree();
+  // console.log("three",three);//정보 출력
+
+  const npcRef = useRef();
+  const npcRigidBody = useRef(null);
+
 
   //그림자
   useEffect(()=>{
@@ -117,84 +105,44 @@ const NPC = () => {
     }
   },[actions,currentAnimation]);
 
-  // useEffect(() => {
-  //   // npcRef가 현재 Three.js 객체를 참조하고 있고, 플레이어 위치가 유효한 경우
-  //   if (npcRef.current && playerPosition) {
-  //     // NPC가 플레이어 위치를 바라보도록 설정
-  //     npcRef.current.lookAt(playerPosition.x, npcRef.current.position.y, playerPosition.z);
-  //   }
-  // }, [playerPosition]); // 플레이어 위치가 변경될 때마다 
-  
   const handleNextClick = () => {
     console.log("next click!!");
-
-    let nextIndex = (currentIndex + 1) % messages.length;
-    console.log(`Next Index: ${nextIndex}, Message: ${messages[nextIndex]}`);
-
-    let nextMessage = messages[nextIndex]; // 기본 메시지
-
-    if (nextIndex === 0) {
-      handleBackClick();
-    } else if (nextIndex === 4&& user) {  // 사용자가 로그인한 경우, 메시지를 사용자 이름으로 개인화 
-       // user 객체에서 사용자 이름 가져오기
-      nextMessage = `반가워,  ><`; // 메시지를 사용자 이름으로 개인화
-    } else if (nextIndex === 4&& !user) {
-        // 사용자가 로그인하지 않은 경우, 로그인 버튼 표시
-        setShowLogin(true);
-        return; // 이후 로직 중단
-    }
-    
-    setCurrentIndex(nextIndex);
-    setMessage(nextMessage);
-};
-
   
+    let nextIndex = currentIndex + 1;
+    
+    // '반가워' 메시지를 건너뛸 필요가 있는지 결정합니다. (로그인 상태일 때)
+    if (nextIndex === 4 && user) {
+      nextIndex++; // 로그인 상태일 경우, '반가워' 메시지를 건너뜁니다.
+    }
+  
+    const finalIndex = nextIndex % messsages.length;
+    console.log(`Next Index: ${finalIndex}, Message: ${messsages[finalIndex]}`);
+  
+    setCurrentIndex(finalIndex);
+    setMessage(messsages[finalIndex]);
+  
+    if (finalIndex !== 4) {
+      setShowLogin(false); // '반가워' 메시지가 아닐 경우, 로그인 버튼을 숨깁니다.
+    }
+  
+    // 다시 처음으로 돌아갔을 때 처리
+    if (finalIndex === 0) {
+      handleBackClick();
+    }
+  };
 
-
-  // 볼 클릭 핸들러
-  // const handleSphereClick = () => {
-  //   console.log("npc click, speech start!!")
-  //   setCurrentIndex(0); // 인덱스를 0으로 초기화_대화를 첨부터
-  //   setMessage(messages[0]);
-  //   setShowSphere(false); // Sphere 숨김
-  //   setShowSpeechBubble(true); // 말풍선 표시
-  //   setIsCharacterVisible(false); // 플레이어를 숨김
-  //   // setIsCollided(true);
-
-  //   const npcPosition = { x: 130, y: 110, z: 1350 }; 
-  //   const npcTarget = { x: 130, y: 90, z: 1200 };
-
-  //   setFocus(npcPosition); // 포커스 대상 좌표 설정
-
-  //   if (!beforeCamera && controlsRef.current) {
-  //       setBeforeCamera({
-  //           position: camera.position.clone(),
-  //           target: controlsRef.current.target.clone(),
-  //       });
-  //       gsap.to(camera.position, {
-  //           x: npcPosition.x,
-  //           y: npcPosition.y,
-  //           z: npcPosition.z,
-  //           duration: 1,
-  //           ease: "power3.inOut",
-  //       });
-  //       gsap.to(controlsRef.current.target, {
-  //           x: npcTarget.x,
-  //           y: npcTarget.y,
-  //           z: npcTarget.z,
-  //           duration: 1,
-  //           ease: "power3.inOut",
-  //           onUpdate: () => { controlsRef.current.update(); },
-  //       });
-  //   }
-  //   setCurrentAnimation((prev) => prev==="walking_55" ? "null" : "walking_55")
-
-  // }
+  useEffect(() => {
+    // 로그인 상태(user가 존재하는 상태)가 되면 자동으로 다음 메시지로 넘어가기
+    if (user && currentIndex === 3) {
+      handleNextClick();
+    }
+  }, [user]);
 
   const handleBackClick=() => {
     console.log("speech end")
     setIsCharacterVisible(true);
     setIsIntroductionEnd(true);
+    setShowSpeechBubble(false);
     setCurrentAnimation((prev) => prev==="standing_55" ? "walking_55" : "standing_55")
   }
 
@@ -207,12 +155,13 @@ const NPC = () => {
   useFrame((state, delta) => {
     if (npcRef.current&&npcRigidBody.current&&!isFocused) {
         try {
-          //player와 부딪혔을 떄 애니메이션 _내부에서
+          const currentPosition = vec3(npcRigidBody.current.translation());
+        // //player와 부딪혔을 떄 애니메이션 _내부에서
 
-          //npc가 플레이어 방향으로 회전하게 위치 저장
-          const position = vec3(npcRigidBody.current.translation());
-          // const npcWorldPosition = npcRef.current.getWorldPosition(new THREE.Vector3());
-          setNpcPosition(position.x, position.y, position.z);
+        //npc가 플레이어 방향으로 회전하게 위치 저장
+        //말풍선도 npcPosition 기반으로 출력됨 
+        // const npcWorldPosition = npcRef.current.getWorldPosition(new THREE.Vector3());
+        setNpcPosition(currentPosition.x, currentPosition.y, currentPosition.z);
 
         } catch (err) {
           alert(err.name);
@@ -226,25 +175,23 @@ const NPC = () => {
   
   return (
     <>
-        {isNpcVisible&&(
-          <RigidBody 
-            type="kinematicPosition"
-            name="NPC"
-            colliders={false}
-            ref={npcRigidBody}
-            position={[0, 4.5, 120]}
-          >
-            <CapsuleCollider 
-              args={[1.5, 2]} 
-            />
-            <primitive 
-              object={scene}
-              ref={npcRef}
-              scale={2.4}
-              position={[0, -3.4, 0]}
-            />
-          </RigidBody>
-        )}
+        <RigidBody 
+          type="kinematicPosition"
+          name="NPC"
+          colliders={false}
+          ref={npcRigidBody}
+          position={[12, 6, -5]}
+        >
+          <CapsuleCollider 
+            args={[1.5, 2]} 
+          />
+          <primitive 
+            object={scene}
+            ref={npcRef}
+            scale={2.4}
+            position={[0, -3.4, 0]}
+          />
+        </RigidBody>
         {/* showSphere 상태가 true일 때 */}
         {/* {showSphere && (
           <mesh position={[npcPosition.x, npcPosition.y + 10, npcPosition.z]} onClick={handleSphereClick}>
@@ -261,14 +208,7 @@ const NPC = () => {
         {showSpeechBubble && (
           <Html position={[npcPosition.x, npcPosition.y + 5, npcPosition.z+0.1]} transform occlude>
             <div className='speech-bubble'>
-              <div className="speech-bubble-text"
-                onPointerOver={(e) => {
-                  document.body.style.cursor = 'default';
-              }}
-              onPointerOut={(e) => {
-                  document.body.style.cursor = 'auto';
-              }}
-              >
+              <div className="speech-bubble-text">
                 {message}
               </div>
             </div>
@@ -299,4 +239,4 @@ const NPC = () => {
   );
 }
 
-export default NPC;
+export default NPCIntro;

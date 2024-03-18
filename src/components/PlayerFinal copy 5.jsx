@@ -6,7 +6,6 @@ import usePlayerStore from "../store/playerStore"
 import { RigidBody, CapsuleCollider, CuboidCollider, useRapier, vec3 } from '@react-three/rapier';
 import { usePersonControls } from "../hooks/usePlayerControls";
 import useInOutStore from "../store/inOutStore";
-import { KinematicCharacterController } from "@dimforge/rapier3d-compat";
 import useCameraStore from '../store/cameraStore';
 import useNPCStore from '../store/npcStore'
 
@@ -18,15 +17,7 @@ const SPEED = 8;
 
 const Player = () => {
     const camera = useThree((state) => state.camera)
-    const isAnimationComplete = useCameraStore((state) => state.isAnimationComplete);
-    const isIntroductionEnd = useNPCStore((state) => state.isIntroductionEnd);
-    // const { cameraPosition, setCameraPosition, cameraTarget, setCameraTarget } = useCameraStore((state) => ({
-    //     cameraPosition: state.cameraPosition,
-    //     setCameraPosition: state.setCameraPosition,
-    //     cameraTarget: state.cameraTarget,
-    //     setCameraTarget: state.setCameraTarget,
-    // }));
-    
+    const isNpcVisible = useNPCStore(state => state.isNpcVisible);
     const { isInside, setIsInside } = useInOutStore((state) => ({
         isInside: state.isInside,
         setIsInside: state.setIsInside,
@@ -86,7 +77,7 @@ const Player = () => {
     const { forward, backward, left, right, jump } = usePersonControls();
 
 
-    const { scene, animations } = useGLTF("/models/character_standing_medium.glb");
+    const { scene, animations } = useGLTF("/models/character_standing_medium2.glb");
     const { actions } = useAnimations(animations, scene);
     // console.log("actions", actions)
 
@@ -216,7 +207,6 @@ const Player = () => {
                 position.add(vec3(correctedMovement));
 
                 characterRigidBody.current.setNextKinematicTranslation(position);
-                characterRigidBody.current.setTranslation(position);
 
                 // console.log("after",position.x,position.y,position.z)
 
@@ -246,7 +236,7 @@ const Player = () => {
                 
                 // 플레이어 위치에 따라 카메라 위치 업데이트
                 camera.position.set(position.x,position.y+8,position.z+12);
-                camera.lookAt(position.x,position.y+2,position.z);
+                camera.lookAt(position.x,position.y,position.z);
                 camera.updateProjectionMatrix()
 
                 //npc가 플레이어 방향으로 회전하게 위치 저장
@@ -281,8 +271,8 @@ const Player = () => {
                 colliders={false}
                 rotation={[0,Math.PI,0]}
                 enabledRotations={[false, false, false]}
-                // position={[0, 5, 130]} //시작위치
-                position={[0, 3, 30]} //문앞
+                position={[0, 5, 130]} //시작위치
+                // position={[0, 3, 30]} //문앞
             >
                 <CapsuleCollider
                     args={[1.5, 2]}
