@@ -23,6 +23,7 @@ const useLoginStore = create((set) => ({
     // } catch (error) {
     //   set({ error: error.message, isLoading: false });}}
     
+    
     try {
        // 백엔드로 구글 로그인 토큰 전송 및 검증 요청
        const response = await api.post("/auth/google", { token });
