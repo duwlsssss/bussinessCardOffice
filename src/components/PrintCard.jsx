@@ -5,20 +5,39 @@ import { Vector3, Quaternion, Matrix4 } from 'three';
 import { gsap } from 'gsap';
 import useCameraStore from '../store/cameraStore';
 import usePlayerStore from "../store/playerStore";
-import html2canvas from 'html2canvas';
-import useCardImgStore from "../store/cardImgStore";
+import useLoginStore from "../store/logInStore"
+import api from '../api/axios'
+import QRCode from 'qrcode.react';
 
 const PrintCard = () => {
     const { camera } = useThree();
-    const { setFocus,clearFocus } = useCameraStore();
+    const { isFocused,setFocus,clearFocus } = useCameraStore();
     const [receivedData, setReceivedData] = useState(null);
-    const [transform, setTransform] = useState(null);
-    const [overlayStyle, setOverlayStyle] = useState({}); //overlay 스타일 변화
-    const [showQR, setShowQR] = useState(false); // QR 코드 표시 여부
-    const [showSavePopup, setShowSavePopup] = useState(false); // 팝업 표시 여부
     const [beforeCamera, setBeforeCamera] = useState(null); 
+    const [showQR,setShowQR]=useState("false");
+    const [isFlipped, setIsFlipped] = useState(false);
     const setIsCharacterVisible = usePlayerStore(state => state.setIsCharacterVisible); //플레이어 가시성 설정
     const playerPosition = usePlayerStore(state => state.playerPosition);
+    const [cardImage, setCardImage] = useState(null);//이미지 저장
+
+    const userEmail = useLoginStore((state) => state.userEmail);
+
+    //서버에서 이미지 가져오기 
+    const fetchImages = async () => {
+      try {
+        const response = await api.get('/images', {
+          params: {
+            tags: userEmail
+          }
+          });
+        if (response.data && response.data.length > 0) {
+          // 이미지 데이터 배열 중 마지막 이미지의 URL을 사용
+          const lastImageIndex = response.data.length - 1;
+          setCardImage(response.data[lastImageIndex].url);
+        }
+      } catch (error) {
+        console.error('Error fetching images:', error);
+    }};
     
     // 자식 창에서 보낸 데이터 수신
     useEffect(() => {
@@ -46,7 +65,9 @@ const PrintCard = () => {
     useEffect(() => {
       if (receivedData) {
         console.log('새로 받은 데이터:', receivedData);
+        setIsFlipped(false); // receivedData가 있을 때 카드를 앞면으로 초기화
         setFocus({ x: -0.5, y: 10, z: -6 }); //포커스 대상의 좌표(isFocus)
+        console.log("isFocused",isFocused);
         // 목표 위치와 시점을 설정
         const targetPosition = new Vector3(-0.5, 10, -6);
         const targetLookAt = new Vector3(-0.5, 10, -9);
@@ -74,67 +95,19 @@ const PrintCard = () => {
           w: targetQuaternion.w,
           duration: 1,
           ease: "power3.inOut",
+          onComplete:()=>{},
         });
       } else {
         handleBackClick(); //원래 위치로 돌아감
       }
-    }},[receivedData]);
-  
-    //카드 마우스 오버 
-    const handleMouseMove = (e) => {
-        const { offsetX, offsetY, target } = e.nativeEvent;
-        const { clientWidth, clientHeight } = target;
-        
-        // 마우스 위치에 따른 회전 각도 계산
-        const rotateY = ((offsetX / clientWidth) * 30) - 20; // 가로 이동에 따른 Y축 회전 범위 조정
-        const rotateX = -(((offsetY / clientHeight) * 30) - 20); // 세로 이동에 따른 X축 회전 범위 조정
-    
-        const backgroundPosition = `${offsetX / 5 + offsetY / 5}%`;
-        const filterOpacity = offsetX / 200;
-
-        setOverlayStyle({
-            backgroundPosition,
-            filter: `opacity(${filterOpacity}) brightness(4)`,
-        });
-
-        setTransform(`perspective(1200px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`);
-    };
-
-    // QR 코드 표시 여부 바꿈
-    const handleQRClick = (e) => {
-      e.stopPropagation();
-      setShowQR(!showQR);
-    };
-
-    // 팝업 표시 여부 바꿈
-    const handleYesClick = (e) => {
-      e.stopPropagation();
-      saveCardHandler();
-      setShowSavePopup(false);
-    };
-    //카드 이미지로 저장
-    const saveCardHandler = async() => {
-      const cardElement = document.querySelector('.cute-card'); 
-      if(cardElement){
-        const canvas = await html2canvas(cardElement);
-        const image = canvas.toDataURL('image/png');
-        useCardImgStore.getState().addImage(image); //Base64 인코딩된 문자열 저장
-        console.log("saved cardImg");
-      }else{
-        console.log("'.cute-card' was not found");
-      }
-    };
-    const handleNoClick = (e) => {
-      e.stopPropagation();
-      setShowSavePopup(false);
-    };
+    }},[receivedData,setFocus,clearFocus]);
 
     const handleBackClick=(e)=>{
       if (e) e.stopPropagation();
       if (beforeCamera && playerPosition) {
         setIsCharacterVisible(true);
         setReceivedData(null);
-        const targetPosition = new Vector3(playerPosition.x, playerPosition.y + 8, playerPosition.z + 12); // 예시 위치, 조정 필요
+        const targetPosition = new Vector3(playerPosition.x, playerPosition.y + 6, playerPosition.z + 10); // 예시 위치, 조정 필요
         const targetLookAt = new Vector3(playerPosition.x, playerPosition.y + 2, playerPosition.z); // 캐릭터를 바라보는 방향
 
         // Quaternion을 사용하여 카메라 회전 목표 계산
@@ -145,6 +118,7 @@ const PrintCard = () => {
           x: targetPosition.x,
           y: targetPosition.y,
           z: targetPosition.z,
+
           duration: 1,
           ease: "power3.inOut",
         });
@@ -161,74 +135,85 @@ const PrintCard = () => {
             clearFocus();
           },
         });
-    }}           
+    }}        
+    
+    //card flip
+    const handleCardClick = () => {
+      //앞면이면
+      if (isFlipped) {
+        setShowQR(true);
+        // 애니메이션이 조금 진행된 후 QR 코드를 보여줌
+        // 애니메이션 지속 시간이 1초일 때
+        setTimeout(() => {
+          setShowQR(false);
+        }, 300); 
+      }
+      
+      // 카드의 뒤집힌 상태를 토글
+      setIsFlipped(!isFlipped);
+      console.log("card flipped!")
+
+      // 카드가 뒤집히기 시작할 때 (앞면에서 뒷면으로 가는 경우)
+      if (!isFlipped) {
+        setShowQR(false);
+        // 애니메이션이 조금 진행된 후 QR 코드를 보여줌
+        // 애니메이션 지속 시간이 1초일 때
+        setTimeout(() => {
+          setShowQR(true);
+        }, 300); 
+      }
+    };
+
+    //이메일 받음 - 개인 qr 사이트 이동용
+    useEffect(()=>{
+        console.log(`userEmail : ${userEmail} type: ${typeof userEmail}`);
+        console.log(`모바일 사이트 주소 http://localhost:3001/?userEmail=${userEmail}`);
+        // console.log(`모바일 사이트 주소 https://kimmobile.netlify.app?userEmail=${userEmail}`);
+    },[userEmail]);
 
 
     return (
       <>
         {receivedData && ( // receivedData가 있을 때만 아래의 내용을 렌더링
           <Html transform occlude position={[-0.5,10,-9]} scale={0.2}>
-            <div className='print-canvas'>
+            <div className='print-canvas' onClick={(e)=>e.stopPropagation()}>
               <div className="back" onClick={handleBackClick}>❌</div>
-              {!showQR && (
-                  // <div 
-                  //     className="cute-card"
-                  //     style={{
-                  //         transform: transform ? transform : undefined,
-                  //     }} 
-                  //     onMouseMove={handleMouseMove}
-                  //     onClick={handleQRClick}
-                  // >
-                  //     <div className="school-logo"><img src="/images/schoolLogo/숭실대학교.png" alt="schoolLogo" /></div>
-                  //     <div className="name">🔖이름: {receivedData?.data?.name || 'N/A'}</div>
-                  //     <div className="email">📬E-mail: {receivedData?.data?.email || 'N/A'}</div>
-                  //     <div className="school">🎓학교: {receivedData?.data?.school || 'N/A'}</div>
-                  //     <div className="MBTI">🥕MBTI: {receivedData?.data?.MBTI || 'N/A'}</div>
-                  //     <div className="IG">🔖IG: {receivedData?.data?.ig || 'N/A'}</div>  
-                  //     <div className="id-picture"><img src="/images/idPicture.png" alt="idPicture" /></div>
-                  //     <div className="kim-logo"><img src="/images/kimLogo.png" alt="kimLogo" /></div>
-                  //     <div className="overlay"/>
-                  // </div>
-                  <div 
-                      className="card-test"
-                      style={{
-                          transform: transform ? transform : undefined,
-                      }} 
-                      onMouseMove={handleMouseMove}
-                      onClick={handleQRClick}
-                  >
-                      <img src="/images/cardFront.jpeg" alt="BCF"/>
-                      {/* <img src="/images/cardBack.jpeg" alt="BCB"/> */}
-                      <div className="name">{receivedData?.data?.name || 'N/A'}</div>
-                      <div className="overlay"/>
-                  </div>
-              )}
-              {showQR && (
-                  <div className="QR" onClick={handleQRClick}>
-                      <img src="/images/qrcodeTest.png" alt="QR Code" />
-                  </div>
-              )}
-              {showSavePopup && (
-                <>
-                  <div className="popup-overlay"/>
-                  <div className="save-popup">
-                    <p>갤러리에 명함을 전시하시겠습니까?</p>
-                    <div className="buttons-container">
-                      <button className="yes-save" onClick={handleYesClick}>OK</button>
-                      <button className="no-save" onClick={handleNoClick}>Cancel</button>
+              <div 
+                className="card"
+                onClick={handleCardClick}
+              >
+                <div className={`cardFront ${isFlipped ? 'flipped' : ''}`}>
+                  <div className="info-container">
+                    <div className="info-item date">
+                      {receivedData?.data?.updatedAt ? new Date(receivedData.data.updatedAt).toLocaleDateString() : 'N/A'}
                     </div>
+                    <div className="info-item name"> {receivedData?.data?.name || 'N/A'}</div>
+                    <div className="info-item school"> {receivedData?.data?.school || 'N/A'}</div>
+                    <div className="info-item studentNum"> {receivedData?.data?.studentNum || 'N/A'}</div>
+                    <div className="info-item major"> {receivedData?.data?.major || 'N/A'}</div>
+                    <div className="info-item email"> {receivedData?.data?.email || 'N/A'}</div>
+                    <div className="info-item session"> {receivedData?.data?.session || 'N/A'}</div>
+                    <div className="info-item MBTI"> {receivedData?.data?.MBTI || 'N/A'}</div>
+                    <div className="info-item IG"> {receivedData?.data?.ig || 'N/A'}</div>  
+                    <div className="info-item moto"> {receivedData?.data?.moto || 'N/A'}</div>
+                    {cardImage && <img src={cardImage} alt="Profile" className="card-image" />}
                   </div>
-                </>
-              )}
-              {!showQR && (
-                  <div className="qr-description">Click business card to show QR</div>
-              )}
+                </div>
+                <div className={`cardBack ${isFlipped ? 'flipped' : ''}`}>
+                {showQR && (
+                  <div className="QR"> 
+                    <QRCode value={`http://localhost:3001/?userEmail=${userEmail}`} />
+                    {/* <QRCode value={`https://kimmobile.netlify.app?userEmail=${userEmail}`} /> */}
+                  </div>
+                )}
+                </div>
+              </div>
+              <div className="qr-description" >QR을 보려면 명함을 클릭하세요</div>
             </div>
           </Html>
         )}
       </>
   );
-  
 }
 
 export default PrintCard;                                                      

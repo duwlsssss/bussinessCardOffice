@@ -6,9 +6,12 @@ import useCameraStore from '../store/cameraStore';
 import usePlayerStore from "../store/playerStore";
 
 const FocusOnMonitor = () => {
-  // 이전 상태 및 기타 필요한 상태 훅스
   const setIsCharacterVisible = usePlayerStore(state => state.setIsCharacterVisible); //플레이어 가시성 설정
-  const { setFocus,clearFocus } = useCameraStore();
+  const {isFocused, setFocus, clearFocus}=useCameraStore((state) => ({
+    isFocused: state.isFocused,
+    setFocus: state.setFocus,
+    clearFocus: state.clearFocus,
+  }));
   const [beforeCamera, setBeforeCamera] = useState(null);
   const camera = useThree((state) => state.camera);
 
@@ -16,9 +19,10 @@ const FocusOnMonitor = () => {
   const handleMonitorClick = () => {
     
     console.log("monitor click")
-    setFocus({ x: -0.65, y: 11, z: -10 }); // 포커스 설정
+    setFocus({ x: -0.65, y: 11, z: -10.3 }); // 포커스 설정
+    console.log("isfocused",isFocused)
     // 목표 위치와 시점을 설정
-    const targetPosition = new Vector3(-0.65, 11, -10);
+    const targetPosition = new Vector3(-0.65, 11, -10.3);
     const targetLookAt = new Vector3(-0.65, 11, -12);
     // 목표 Quaternion 계산
     const targetQuaternion = new Quaternion().setFromRotationMatrix(

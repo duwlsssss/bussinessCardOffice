@@ -1,196 +1,290 @@
+.start-overlay-container{ 
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgb(255,255,255);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap:1rem;
+  width: 100%;
+  height: 100%;
+}
+
+.start-btn{
+  border: 0;
+  outline: 0;
+  padding: 0.5rem 1rem; 
+  font-size: 1rem; 
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background-color: rgb(238, 238, 238);
+  box-shadow: rgb(0 0 0 / 10%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(60 66 87 / 8%) 0px 2px 4px 0px;
+  align-items: center;
+  transition: background-color .24s, box-shadow .24s;
+}
+.start-btn:hover {
+  box-shadow: rgb(0 0 0 / 30%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(60 66 87 / 20%) 0px 3px 9px 0px, rgb(60 66 87 / 20%) 0px 2px 5px 0px;
+}
+
 .speech-bubble {
   /* background-color: red; */
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: -5.5rem;
-  width: 25rem; 
+  width: 30rem; 
   height: 3rem; 
-  overflow: hidden; /* 내용이 넘칠 경우 숨깁니다. */
+  overflow: hidden; /* 내용이 넘칠 경우 숨김 */
 }
 
 .speech-bubble-text {
-  display: ralative;
-  z-index: 100;
+  /* background-color: red; */
   font-size: 1.2rem;
-  max-width: 100%;
   color: black;
-  white-space: normal; /* 줄바꿈을 허용합니다. */
-  text-align: center; /* 텍스트를 중앙 정렬합니다. */
+  white-space: nowrap;
+  text-align: center; 
   cursor: pointer;
+  overflow: hidden;
+  animation: typing 2s steps(40, end) forwards;
 }
 
-/* .button-container {
-  position: relative;
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.userNameTyping {
+  display: inline-block;
+  white-space: nowrap;
   overflow: hidden;
-}*/
+  animation: typing 2s steps(30, end) forwards;
+}
 
-/* 실제 버튼이 될 요소 */
-/* .renderButton {
-  position: absolute;
-  height: 100%; 전체 높이
-  width: 100%; 전체 너비
-  opacity: 0; 보이지 않도록 설정
-} */
-
-/* iframe이 렌더링 될 요소 (실제 작동되는 버튼) */
-/* iframe {
-  transform: scale(1);
-  color: #66BB6A;
-  transform-origin: top;
-} */ 
 
 
 .btn {
-	background: #7C7C7C;
-	border-bottom: 6px inset rgba(0,0,0,.5);
-	border-left: 6px inset rgba(0,0,0,.5);
-	border-right: 6px inset rgba(255,255,255,.5);
-	border-top: 6px inset rgba(255,255,255,.5);
-	color: white;
-	cursor: pointer;
-	display: inline-block;
-	font-size: 2.2rem;
-	margin: 1rem;
-	min-width: 200px;
-	padding: .5rem;
-	text-transform: uppercase;
-	width: auto;
-
-	&:focus,
-	&:hover {
-		background-color: #BCBCBC;
-	}
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+  background-color: rgb(238, 238, 238);
+  box-shadow: rgb(0 0 0 / 10%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(60 66 87 / 8%) 0px 2px 4px 0px;
+  border-radius: 4px;
+  padding: 10px;
+  align-items: center;
+  transition: background-color .24s, box-shadow .24s;
 }
 
-.btn.logout {
-	background: #4CAF50; 
+.btn:hover {
+  box-shadow: rgb(0 0 0 / 30%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(60 66 87 / 20%) 0px 3px 9px 0px, rgb(60 66 87 / 20%) 0px 2px 5px 0px;
+}
 
-	&:focus,
-	&:hover {
-		background-color: #66BB6A; 
-	}
+.btn img {
+  width: 30px; 
+  height: auto; 
+}
+
+.overlay-btns-container {
+  position:fixed;
+  top: 750px;
+  right: 20px;
+  display: flex;
+  z-index:18388635;
+  /* background-color: aqua; */
+  justify-content: center; 
+  gap: 30px;
 }
 
 
 .login-overlay {
   /* background-color: blue; */
   position: relative;
-  top: -570px;
-  left: 640px;
+  top: -710px;
+  left: 660px;
   width: 13rem; 
   height: 3rem; 
   z-index: 100;
-  pointer-events: auto; /* 포인터 이벤트 활성화 */
   cursor: pointer;
 }
 
-
 .print-canvas {
-  display: flex;
   background: rgba(255, 255, 255, 0.7);
-  width:100vw;
-  height:100vh;
-  border-radius: 2rem;
-  justify-content: center;
+  width:75rem;
+  height:50rem;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  margin: auto;
 }
 
-.cute-card {
+
+/*여러 데이터 올리기 확인용*/
+/* .cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0px; 
+  justify-content: center;
+} */
+
+
+
+.card {
+  background-color: aqua;
+  width: 51rem;
+  height: 30rem;
+  margin-top:8rem;
   position: relative;
-  width: 50vw;
-  height: 35vw; 
-  font-size: 1.5rem;
-  background: rgba(255, 255, 255);
   border-radius: 1rem;
-  padding: 1.5rem 2rem 0.5rem 2rem;
-  display: grid;
-  grid-template-rows: repeat(6, 1fr);
-  grid-template-columns: repeat(3, 1fr); /* 3등분한 컬럼 */
-  grid-column-gap:0.5rem;
-  /* grid-row-gap:1rem; */
-  grid-template-areas: 
-    "school-logo . ."
-    "name name id-picture"
-    "email email id-picture"
-    "school school id-picture"
-    "MBTI MBTI id-picture"
-    "IG IG kim-logo";
-  cursor: pointer; /*클릭시 qr 출력 위함*/
-  overflow: hidden; /* 이 속성이 경계를 넘어서는 자식 요소들을 숨감 */
+  cursor:pointer;
+  perspective:100rem;
 }
 
-.school-logo{grid-area: school-logo;}
-.name { grid-area: name; }
-.email { grid-area: email; }
-.school { grid-area: school; }
-.MBTI { grid-area: MBTI; }
-.IG { grid-area: IG; }
-.id-picture{grid-area: id-picture;}
-.kim-logo{grid-area: kim-logo;}
-
-.school-logo img {
-  width: 40%; /* 부모 요소인 .school-logo에 맞게 조정 */
-  height: auto; /* 이미지의 비율을 유지하면서 너비에 맞춤 */
-  object-fit: cover; /* 이미지를 부모 요소에 맞추되, 비율 유지 */
-  margin-bottom: 1rem;
-}
-.id-picture img {
-  width: 100%; /* 부모 요소인 .school-logo에 맞게 조정 */
-  height: 98%; /* 이미지의 비율을 유지하면서 너비에 맞춤 */
-  object-fit: cover; /* 이미지를 부모 요소에 맞추되, 비율 유지 */
-}
-.kim-logo img {
-  margin-left: 6.8rem;
-  margin-top: 0.5rem;
-  width: 50%; /* 부모 요소인 .school-logo에 맞게 조정 */
-  height: 50%; /* 이미지의 비율을 유지하면서 너비에 맞춤 */
-}
-
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
+.cardFront,
+.cardBack {
+  box-sizing: border-box;
   height: 100%;
   width: 100%;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 219, 112, 1) 40%, rgba(132, 50, 255, 1) 50%, transparent 54%);
-  filter: blur(30px) brightness(1.1) opacity(0.7);
-  mix-blend-mode: screen;
-  background-size: 150% 150%;
-  background-position: 100%;
-  transition: all 0.1s;
-}
-
-.qr-description{
+  transition: transform 1s ease;
   position: absolute;
-  top: 46rem;
-  padding: 0.5rem;
-  font-size: 1.5rem; 
-  background-color: bisque;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
-.QR{
+.cardBack {
+  background-image: url('/images/BC_front.png');
+  background-size: cover; 
+  background-position: center; 
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+}
+
+.cardBack.flipped {
+  transform: rotateY(0deg);
+}
+
+.cardFront {
+  background-image: url('/images/BC_front.png');
+  background-size: cover; 
+  background-position: center; 
+  transform: rotateY(0deg);
+}
+
+.cardFront.flipped {
+  transform: rotateY(-180deg);
+}
+
+.info-container {
+  font-family: sans-serif;
   position: absolute;
-}
-
-.popup-overlay {
-  position: fixed; /* 전체 화면을 커버 */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  backdrop-filter: blur(4px) grayscale(90%);
-  z-index: 999; /* 팝업 뒤에 위치하도록 z-index 설정 */
 }
-.save-popup {
+.info-item {
+  position: absolute;
+}
+
+.card-image{
+  width: 18rem;
+  height: 20rem;
+  margin-top:6.5rem;
+  margin-left: 2rem;
+}
+
+.date{
+  top: 100px;
+  right: 70px;
+}
+.name {
+  top: 140px;
+  right: 150px;
+}
+.school {
+  top: 171px; 
+  left:520px; 
+}
+.studentNum {
+  top: 171px; 
+  right: 150px; 
+}
+.major {
+  top: 203px; 
+  right:150px;
+}
+.email {
+  top: 233px; 
+  right: 150px;
+}
+.session {
+  top: 263px; 
+  right:150px;
+}
+.MBTI {
+  top: 293px; 
+  right: 150px;
+}
+.IG {
+  top: 325px; 
+  right: 150px; 
+}
+.moto {
+  top: 356px; 
+  right: 150px;
+}
+
+.QR{
+  position: absolute;
+  margin: 15rem 40rem;
+}
+
+.qr-description{
+  position: absolute;
+  top: 43rem;
+  padding: 0.5rem;
+  font-size: 1.5rem; 
+  cursor:default;
+  background-color: bisque;
+}
+
+
+
+
+.popup-overlay {
+  position: fixed; /* 전체 화면을 커버 */
+  right: 1000;
+  bottom: 1000;
+  width:10000px;
+  height:1000px;
+  backdrop-filter: blur(4px) grayscale(0%);
+  z-index: 10;
+}
+
+.logout-save-popup {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1000; /* 다른 요소들보다 높은 값으로 설정 */
+  z-index: 100; 
   background-color: rgb(255,255,255); /* 배경색 */
   font-size: 2rem;
-  padding: 1rem; /* 패딩 */
+  padding: 2rem; /* 패딩 */
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.save-popup {
+  position: absolute;
+  margin-top:10rem;
+  z-index: 1000; 
+  background-color: rgb(255, 255, 255); 
+  font-size: 2rem;
+  padding:10rem; /* 패딩 */
   border-radius: 1rem;
   display: flex;
   flex-direction: column;
@@ -201,6 +295,7 @@
   display: flex;
   flex-direction: row;
   justify-content: center; 
+  margin-top:2rem;
   gap: 1rem; 
 }
 
@@ -209,13 +304,35 @@
   border-radius: 0.5rem;
   cursor: pointer; 
   font-size: 1rem; 
+  border: 0;
+  outline: 0;
+  padding: 0.5rem 1rem; 
+  background-color: rgb(238, 238, 238);
+  box-shadow: rgb(0 0 0 / 10%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(60 66 87 / 8%) 0px 2px 4px 0px;
+  align-items: center;
+  transition: background-color .24s, box-shadow .24s;
 }
+.yes-save:hover {
+  box-shadow: rgb(0 0 0 / 30%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(60 66 87 / 20%) 0px 3px 9px 0px, rgb(60 66 87 / 20%) 0px 2px 5px 0px;
+}
+
 .no-save{
+  border: 0;
+  outline: 0;
   padding: 0.5rem 1rem; 
   border-radius: 0.5rem;
   cursor: pointer; 
   font-size: 1rem;
+  background-color: rgb(238, 238, 238);
+  box-shadow: rgb(0 0 0 / 10%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(60 66 87 / 8%) 0px 2px 4px 0px;
+  align-items: center;
+  transition: background-color .24s, box-shadow .24s;
 }
+.no-save:hover {
+  box-shadow: rgb(0 0 0 / 30%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(60 66 87 / 20%) 0px 3px 9px 0px, rgb(60 66 87 / 20%) 0px 2px 5px 0px;
+}
+
+
 
 .back {
   position: absolute;
@@ -243,26 +360,3 @@
   font-size: 1.5rem; 
   background-color: bisque;
 }
-
-
-
-
-/* .card-test{
-  position: relative;
-  width: 50vw;
-  height: 35vw; 
-  border-radius: 1rem;
-  cursor: pointer; 
-  overflow: hidden;
-}
-.card-test img {
-  width: 100%; 
-  height: 100%; 
-}
-.card-test .name {
-  position: absolute;
-  bottom: 212px; 
-  left: 18%; 
-  color: darkblue;
-  text-align: center; 
-} */

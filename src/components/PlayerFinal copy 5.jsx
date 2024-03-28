@@ -1,27 +1,35 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import usePlayerStore from "../store/playerStore"
 import { RigidBody, CapsuleCollider, CuboidCollider, useRapier, vec3 } from '@react-three/rapier';
 import { usePersonControls } from "../hooks/usePlayerControls";
-import useInOutStore from "../store/inOutStore";
 import useCameraStore from '../store/cameraStore';
-import useNPCStore from '../store/npcStore'
+import useNpcInsideStore from '../store/npcInsideStore'
+import useNPCStore from '../store/npcIntroStore'
+import { gsap } from 'gsap';
+import useOverlayStore from '../store/overlayStore';
 
 let walkDirection = new THREE.Vector3();
 let rotateAngle = new THREE.Vector3(0, 1, 0);
 let rotateQurternion = new THREE.Quaternion();
 
-const SPEED = 8;
+const SPEED = 30;
 
 const Player = () => {
     const camera = useThree((state) => state.camera)
     const isNpcVisible = useNPCStore(state => state.isNpcVisible);
-    const { isInside, setIsInside } = useInOutStore((state) => ({
+    const { isInside, setIsInside, setIsOutside } = useOverlayStore((state) => ({
         isInside: state.isInside,
         setIsInside: state.setIsInside,
+        setIsOutside: state.setIsOutside,
     }));
+    const {isIntroductionEnd} = useNPCStore();
+    const [isCameraAnimated, setIsCameraAnimated] = useState(false);//플레이어 시점 이동시 부드러운 카메라 전환을 위함
+
+    const playerToNPC=usePlayerStore(state=>state.playerToNPC); //볼 클릭시 플레이어가 npc 바라보게 회전하려고
+    const npcPosition = useNpcInsideStore((state) => state.npcPosition);
 
     const rapier = useRapier(null);
     const characterRef = useRef();
@@ -69,6 +77,7 @@ const Player = () => {
     });
 
     const { isFocused, clearFocus } = useCameraStore();
+    const playerPosition = usePlayerStore(state => state.playerPosition);
     const setPlayerPosition = usePlayerStore(state => state.setPlayerPosition);
     const isCharacterVisible = usePlayerStore(state => state.isCharacterVisible);
 
@@ -77,7 +86,7 @@ const Player = () => {
     const { forward, backward, left, right, jump } = usePersonControls();
 
 
-    const { scene, animations } = useGLTF("/models/character_standing_medium2.glb");
+    const { scene, animations } = useGLTF("/models/character_standing_medium3.glb");
     const { actions } = useAnimations(animations, scene);
     // console.log("actions", actions)
 
@@ -131,11 +140,64 @@ const Player = () => {
         c.enableAutostep(5, 0.005, true); //5보다 높은 장애물, 0.005보다 작은 너비의 장애물은 못 올라감
         c.setApplyImpulsesToDynamicBodies(true);
         c.enableSnapToGround(0.5);
+        c.characterMass(1);
         characterController.current = c;
     }, [rapier]);
 
+    //컴포넌트 마운트 될때 카메라 이동 부드럽게 
+    useEffect(() => {
+        if (isIntroductionEnd) {
+            console.log("캐릭터 시점으로 이동");
+            const playerPos = vec3(characterRigidBody.current.translation());
+            // console.log(`x: ${playerPos.x} y: ${playerPos.y} z: ${playerPos.z}`);
+            // npc의 시작 설명이 끝나면 캐릭터가 앞을 바라보게 설정
+            if (characterRef.current) {
+                characterRef.current.rotation.y = 0;
+            }
+            gsap.to(camera.position, {
+                x: playerPos.x,
+                y: playerPos.y+6,
+                z: playerPos.z+10,
+                duration: 0.4,
+                onUpdate: () => {
+                    camera.lookAt(playerPos.x, playerPos.y+2, playerPos.z);
+                },
+                onComplete: () => {
+                    setIsCameraAnimated(true);
+                }
+            });
+        }
+      
+    }, [camera,isIntroductionEnd]);
+
+
+    const forOriginRot = useNpcInsideStore(state => state.forOriginRot); //characterRef의 원래 방향으로 돌아가기 위해
+    const setForOriginRot = useNpcInsideStore(state => state.setForOriginRot); 
+    const [originalRotation, setOriginalRotation] = useState();
+
+    //볼 클릭하면 플레이어가 npc 바라보게 함 
+    useEffect(() => {
+        if (playerToNPC) {
+            //초기 characterRef 방향 저장
+            setOriginalRotation(characterRef.current.rotation.y); 
+            // 플레이어 위치와 NPC 위치 사이의 차이 벡터를 계산
+            const dx = npcPosition.x-playerPosition.x;
+            const dz = npcPosition.z-playerPosition.z;
+
+            // atan2 함수를 사용하여 플레이어 방향으로의 회전 각도를 계산
+            const angle = Math.atan2(dx, dz);
+
+            // NPC의 Y축 회전을 직접 설정
+            characterRef.current.rotation.y = angle+Math.PI;
+        }
+        else if(!playerToNPC&&forOriginRot){
+            characterRef.current.rotation.y = originalRotation;
+            setForOriginRot(false);
+        }
+    }, [playerToNPC, npcPosition, playerPosition]);
+
     useFrame((state, delta) => {
-        if (characterCollider.current && characterRigidBody.current && characterController.current&&!isFocused) {
+        if (isCameraAnimated && characterCollider.current && characterRigidBody.current && characterController.current&&!isFocused) {
             try {
                 const position = vec3(characterRigidBody.current.translation());
                 const movement = vec3();
@@ -223,24 +285,25 @@ const Player = () => {
                     shape.halfExtents.y === 4.5 && // halfExtents의 y값
                     shape.halfExtents.z === 1) {   // halfExtents의 z값
                     console.log("GoInDoor와 충돌 감지");
-                    setIsInside(true);
+                    setIsInside();
                     }
                     else if (shape.type === 1 &&
                     shape.halfExtents.x === 4 && 
                     shape.halfExtents.y === 4.5 && 
                     shape.halfExtents.z === 1) {   
                     console.log("GoOutDoor와 충돌 감지");
-                    setIsInside(false);
+                    setIsOutside();
                     }
                 }
                 
                 // 플레이어 위치에 따라 카메라 위치 업데이트
-                camera.position.set(position.x,position.y+8,position.z+12);
-                camera.lookAt(position.x,position.y,position.z);
+                camera.position.set(position.x,position.y+6,position.z+10);
+                camera.lookAt(position.x,position.y+2,position.z);
                 camera.updateProjectionMatrix()
 
                 //npc가 플레이어 방향으로 회전하게 위치 저장
                 // const characterWorldPosition = characterRef.current.getWorldPosition(new THREE.Vector3());
+                // setPlayerPosition(characterWorldPosition.x, characterWorldPosition.y, characterWorldPosition.z);
                 setPlayerPosition(position.x, position.y, position.z);
             } catch (err) {
                 alert(err.name);
@@ -271,7 +334,7 @@ const Player = () => {
                 colliders={false}
                 rotation={[0,Math.PI,0]}
                 enabledRotations={[false, false, false]}
-                position={[0, 5, 130]} //시작위치
+                position={[0, 4.5, 130]} //시작위치
                 // position={[0, 3, 30]} //문앞
             >
                 <CapsuleCollider
@@ -282,7 +345,7 @@ const Player = () => {
                     object={scene}
                     ref={characterRef}
                     scale={2.4}
-                    position={[0, -3, 0]} 
+                    position={[0, -3.4, 0]} 
                 />
             </RigidBody>
         </>

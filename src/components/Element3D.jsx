@@ -3,23 +3,23 @@ import { useLoader, useFrame, useThree, extend} from '@react-three/fiber';
 import { useGLTF, Environment, Html, OrbitControls,Text, Sky, useAnimations} from "@react-three/drei"
 import * as THREE from 'three'; // THREE 모듈을 임포트
 import { Stats, useHelper } from '@react-three/drei';
-import { DirectionalLightHelper, SpotLightHelper } from 'three';
+import { DirectionalLightHelper, SpotLightHelper, PointLightHelper } from 'three';
 import NPCIntro from './NPCIntro';
-import NPCIn from './NPCIn';
+import NPCInside from './NPCInside';
 import Player from "./PlayerFinal copy 5";
 import FocusOnMonitor from "./FocusOnMonitor";
 import FocusOnNoticeBoard from "./FocusOnNoticeBoard";
 import usePlayerStore from  "../store/playerStore";
 import PrintCard from "./PrintCard";
+// import PrintCard from "./PrintCard copy";
 import Gallery from "./Gallery";
-import useInOutStore from "../store/inOutStore"
 import { Water } from 'three-stdlib'
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
-import useNPCIntrStoreStore from "../store/npcStore";
-import useLoginStore from '../store/logInStore';
+import useNPCIntrStoreStore from "../store/npcIntroStore";
+import useLoginStore from "../store/logInStore";
+import useOverlayStore from "../store/overlayStore";
 
 extend({ Water })
-
 
 function Ocean() {
     const ref = useRef()
@@ -48,24 +48,18 @@ function Ocean() {
 
 function Element3D(){
 
-    const { isInside, setIsInside } = useInOutStore((state) => ({
-        isInside: state.isInside,
-        setIsInside: state.setIsInside,
+    const { isInside } = useOverlayStore((state) => ({
+        isInside: state.isInside
     }));
-    // const [isInside, setIsInside]=useState(false);
-    // const [isInside, setIsInside]=useState(true); //내부 테스트용
     const isIntroductionEnd = useNPCIntrStoreStore((state) => state.isIntroductionEnd);
+    const userEmail = useLoginStore((state) => state.userEmail);
 
-    const isLoggedIn = useLoginStore((state) => state.isLoggedIn);
-    const logout = useLoginStore(state => state.logout);
-
-
-    // const office_objects = useGLTF('/models/office_modeling_draco.glb')
+    const office_objects = useGLTF('/models/office_modeling_draco.glb')
     // const floor = useGLTF('/models/wall_floor.glb')
     // const monitor = useGLTF('/models/monitor_draco.glb')
     const office_outside = useGLTF('/models/external_modeling_draco.glb')
     // const office = useGLTF('/models/office.glb')
-    const flowers = useGLTF('/models/flowers.glb')
+    // const flowers = useGLTF('/models/flowers.glb')
 
     // const duckRef=useRef();
     // const { scene, animations } = useGLTF("/models/lowpoly_duck_animated.glb");
@@ -115,29 +109,31 @@ function Element3D(){
     useHelper(directionalLightRef, DirectionalLightHelper,5, "red");
     const spotLightRef = useRef();
     useHelper(spotLightRef, SpotLightHelper,5, "red");
+    const pointLightRef = useRef();
+    useHelper(pointLightRef, PointLightHelper,5, "red");
 
     //그림자 넣기
     useEffect(() => {
-        // office_objects.scene.traverse(child => {
-        //     if (child.isMesh) {
-        //         child.castShadow = true;
-        //         child.receiveShadow = true;
-        //     }
-        // });
+        office_objects.scene.traverse(child => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
         office_outside.scene.traverse(child => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
             }
         });
-        flowers.scene.traverse(child => {
-            if (child.isMesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        });
+        // flowers.scene.traverse(child => {
+        //     if (child.isMesh) {
+        //         child.castShadow = true;
+        //         child.receiveShadow = true;
+        //     }
+        // });
 
-    }, [office_outside,flowers]);
+    }, [office_objects,office_outside]);
 
     //문 충돌 확인 떔에 옮겨놓음
     const arrowRef = useRef();
@@ -151,13 +147,12 @@ function Element3D(){
     const { handleMonitorClick } = FocusOnMonitor();
 
 
+    //이메일 받음
+    useEffect(()=>{
+        console.log(`userEmail : ${userEmail} type: ${typeof userEmail}`);
+        console.log(`iframe 주소 http://localhost:3000/MyMyungham?userEmail=${userEmail}`);
+    },[userEmail]);
 
-    //로그아웃 처리
-    const handleLogout = () => {
-        logout(); // 로그아웃 함수 호출
-        console.log('Logged out successfully');
-    };
-    //소리 유무 처리
 
 
     return(
@@ -165,11 +160,11 @@ function Element3D(){
             {/* <OrbitControls makeDefault/>  */}
             <Sky distance={350} sunPosition={[100,400,0]}/>
             <Environment preset="sunset"/>
-            <ambientLight intensity={2} color="#ffffff"/>
+            <ambientLight intensity={1} color="#ffffff"/>
             <directionalLight
                 castShadow
                 ref={directionalLightRef}
-                intensity={5}
+                intensity={1}
                 position={[100,400,0]}
                 color={"#ffffff"}
                 shadow-camera-left={75}
@@ -201,7 +196,7 @@ function Element3D(){
                     />
                 </RigidBody>
                 )}
-                {!isInside&&(
+                {/* {!isInside&&(
                 <RigidBody
                     type="fixed"
                     scale={1}
@@ -211,7 +206,7 @@ function Element3D(){
                         object={flowers.scene}
                     />
                 </RigidBody>
-                )}
+                )} */}
                 {/*outSide*/}
                 {!isInside && (
                     <RigidBody
@@ -303,6 +298,14 @@ function Element3D(){
                     /> 
                 </RigidBody>
                 )} */}
+                {/*포인트라이트*/}
+                {/* {!isInside&&(        
+                <pointLight
+                    ref={pointLightRef}
+                    position={[-18,12,12]} // 램프의 위치에 맞게 조정
+                    color={"gold"}
+                    intensity={10000}
+                />)} */}
                 {/*inSide*/}
                 {isInside && (
                     <RigidBody type="fixed" name="GoOutDoor"
@@ -355,15 +358,14 @@ function Element3D(){
                 />)}
                 {isInside&&(
                 <Html 
-                    className="monitor-screen" 
+                    position={[-0.62,11.025,-12.16]}
                     transform
                     occlude="blending"
                     scale={0.087}
-                    position={[-0.62,11.025,-12.16]}
                 >
-                    <iframe src="https://kimmyungsa.netlify.app"
-                        allow="camera;"
-                        style={{ width: '1630px', height: '1210px' }}
+                     {/* <iframe src={`https://kimmyungsa.netlify.app?userEmail=${userEmail}`} */}
+                     <iframe src={`http://localhost:3000/MyMyungham?userEmail=${userEmail}`}
+                       allow="camera;"  style={{ width: '1630px', height: '1210px' }}
                     />
                 </Html>
                 )}
@@ -375,7 +377,7 @@ function Element3D(){
                     position={[100,0,63]}
                 />  */}
                 {/*<CameraHelper targetPosition={new Vector3(0, 106, 30)} />*/}
-                {/* {isInside&&(<RigidBody 
+                {isInside&&(<RigidBody 
                     type="fixed"
                     colliders={false}
                     // colliders="trimesh"
@@ -387,7 +389,7 @@ function Element3D(){
                         object={office_objects.scene} 
                     /> 
                 </RigidBody>)}
-                건물 밖에서 보이는 안 부분
+                {/* 건물 밖에서 보이는 안 부분 */}
                 {!isInside&&(<RigidBody 
                     type="fixed"
                     colliders={false}
@@ -398,7 +400,7 @@ function Element3D(){
                     <primitive
                         object={office_objects.scene} 
                     /> 
-                </RigidBody>)} */}
+                </RigidBody>)}
                 {isInside&&(
                 <mesh 
                     position={[-0.6,10.7,-13.2]} 
@@ -452,16 +454,8 @@ function Element3D(){
                 <Gallery/>
                 )} 
                 {!isInside&&<NPCIntro/>}
-                {isInside&&<NPCIn/>}
+                {isInside&&<NPCInside/>}
                 {isIntroductionEnd&&(<Player/>)}
-                {/*로그아웃 버튼*/}
-                {isLoggedIn && (
-                    <Html transform occlude position={[-10,20,30]}>
-                    <button type="button" className="btn logout" onClick={handleLogout}>
-                        LogOut
-                    </button>
-                    </Html>
-                )}
         </>
     );
 }

@@ -4,7 +4,7 @@ const host = window.location.hostname === "localhost" ? "http://localhost:8000":
 //로컬 네트워크에서 다른 컴퓨터의 IP 주소가 192.168.1.5라면, baseURL을 http://192.168.1.5:8000으로 설정해야 
 //axios 인스턴스 생성
 const api = axios.create({
-    baseURL: host, //API baseURL 
+    baseURL: 'http://kimmyungsa.us-east-2.elasticbeanstalk.com', //API baseURL 로그인 때문에 로컬주소로 해야함(json "/") 
     timeout:5000, //요청이 5000ms(5초) 이내에 완료되지 않으면 요청이 중단됨
     headers:{ //모든 요청,응답에 기본으로 포함될 헤더 
       'Content-Type' : 'application/json', // json 형식 데이터
@@ -15,6 +15,8 @@ api.interceptors.request.use(
     //요청 설정 객체 출력, 그대로반환
     (config) => {
       console.log(`Request Interceptor - Config:`, config);
+      console.log('Request config.data:', config.data);
+      console.log(` JSON 문자열 형태 Request config.data::`, JSON.stringify(config.data));
       return config;
     },
     //오류 발생시 request process 중단시킴

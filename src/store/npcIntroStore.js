@@ -5,6 +5,8 @@ const useNPCStore = create(set => ({
   setNpcPosition: (x, y, z) => set(() => ({ npcPosition: { x, y, z } })),
   isNpcVisible: false, // npc 초기 가시성 상태
   setIsNpcVisible: (isNpcVisible) => set(() => ({ isNpcVisible })),
+  showSpeechBubble: false, // npc 초기 가시성 상태
+  setShowSpeechBubble: (showSpeechBubble) => set(() => ({ showSpeechBubble })),
   isIntroductionEnd: false, // npc 설명 끝남 여부
   // isIntroductionEnd: true, // 캐릭터 이동 확인용
   setIsIntroductionEnd: (isIntroductionEnd) => set(() => ({ isIntroductionEnd })),
